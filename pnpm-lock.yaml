@@ -370,6 +370,9 @@ importers:
       '@cunny-ai/detect':
         specifier: workspace:*
         version: link:../packages/detect
+      '@cunny-ai/embed':
+        specifier: workspace:*
+        version: link:../packages/embed
       '@cunny-ai/face-detect':
         specifier: workspace:*
         version: link:../packages/face-detect
@@ -379,19 +382,43 @@ importers:
       '@cunny-ai/pose':
         specifier: workspace:*
         version: link:../packages/pose
+      '@cunny-ai/search':
+        specifier: workspace:*
+        version: link:../packages/search
       '@cunny-ai/segment':
         specifier: workspace:*
         version: link:../packages/segment
       '@cunny-ai/similarity':
         specifier: workspace:*
         version: link:../packages/similarity
+      '@cunny-ai/stt':
+        specifier: workspace:*
+        version: link:../packages/stt
       '@cunny-ai/track':
         specifier: workspace:*
         version: link:../packages/track
       '@cunny-ai/tts':
         specifier: workspace:*
         version: link:../packages/tts
+      '@cunny-ai/vad':
+        specifier: workspace:*
+        version: link:../packages/vad
+      '@cunny-ai/vector':
+        specifier: workspace:*
+        version: link:../packages/vector
     devDependencies:
+      '@huggingface/transformers':
+        specifier: 3.8.1
+        version: 3.8.1
+      '@mediapipe/tasks-vision':
+        specifier: 1.0.1
+        version: 1.0.1
+      kokoro-js:
+        specifier: 1.2.1
+        version: 1.2.1
+      onnxruntime-web:
+        specifier: 1.22.0
+        version: 1.22.0
       vite:
         specifier: ^6.0.0
         version: 6.4.3(@types/node@26.4.0)(yaml@2.9.0)

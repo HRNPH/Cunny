@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5199 --strictPort",
     "build": "vite build"
   },
   "dependencies": {
@@ -12,15 +12,24 @@
     "@cunny-ai/clip": "workspace:*",
     "@cunny-ai/depth": "workspace:*",
     "@cunny-ai/detect": "workspace:*",
+    "@cunny-ai/embed": "workspace:*",
     "@cunny-ai/face-detect": "workspace:*",
     "@cunny-ai/face-mesh": "workspace:*",
     "@cunny-ai/pose": "workspace:*",
+    "@cunny-ai/search": "workspace:*",
     "@cunny-ai/segment": "workspace:*",
     "@cunny-ai/similarity": "workspace:*",
+    "@cunny-ai/stt": "workspace:*",
     "@cunny-ai/track": "workspace:*",
-    "@cunny-ai/tts": "workspace:*"
+    "@cunny-ai/tts": "workspace:*",
+    "@cunny-ai/vad": "workspace:*",
+    "@cunny-ai/vector": "workspace:*"
   },
   "devDependencies": {
+    "@huggingface/transformers": "3.8.1",
+    "@mediapipe/tasks-vision": "1.0.1",
+    "kokoro-js": "1.2.1",
+    "onnxruntime-web": "1.22.0",
     "vite": "^6.0.0"
   }
 }
