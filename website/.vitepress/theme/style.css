@@ -1,0 +1,77 @@
+/* Elysia-inspired dark theme, matched to the playground palette. */
+
+:root {
+  --cunny-bg: #0b0d10;
+  --cunny-panel: #111418;
+  --cunny-border: #222831;
+  --cunny-blue: #2563eb;
+  --cunny-green: #4ade80;
+}
+
+.dark {
+  --vp-c-bg: var(--cunny-bg);
+  --vp-c-bg-alt: var(--cunny-panel);
+  --vp-c-bg-soft: #14181d;
+  --vp-c-border: var(--cunny-border);
+  --vp-c-divider: #1d232b;
+  --vp-c-text-1: #e6e8eb;
+  --vp-c-text-2: #a3adba;
+  --vp-c-text-3: #6e7a87;
+
+  --vp-c-brand-1: #4f83f1;
+  --vp-c-brand-2: var(--cunny-blue);
+  --vp-c-brand-3: #1d4ed8;
+  --vp-c-brand-soft: rgba(37, 99, 235, 0.14);
+
+  --vp-code-bg: #161b21;
+  --vp-button-alt-border: transparent;
+}
+
+.VPNavBar {
+  background: color-mix(in srgb, var(--cunny-bg) 82%, transparent) !important;
+  backdrop-filter: blur(12px);
+}
+
+.VPNavBarTitle .title {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* gradient hero name, Elysia-style */
+.vp-doc.hero .name,
+.home-hero .title {
+  background: linear-gradient(120deg, #7aa5f8 10%, var(--cunny-blue) 55%, #8b5cf6 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.home-hero .tagline {
+  color: var(--vp-c-text-2) !important;
+}
+
+/* signature code blocks read like API panels */
+.vp-doc div[class*='language-'] {
+  border: 1px solid var(--cunny-border);
+  border-radius: 10px;
+}
+
+.vp-doc h2 {
+  border-top: 1px solid var(--vp-c-divider);
+  padding-top: 1.6rem;
+}
+
+/* sidebar active item */
+.VPSidebarItem.level-0.is-link > .item .link:hover {
+  color: var(--vp-c-brand-1);
+}
+
+/* package-card look for feature boxes */
+.VPFeatures .VPFeature {
+  border: 1px solid var(--cunny-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #12161b, #0e1115);
+}
+
+.VPFeatures .VPFeature:hover {
+  border-color: #324257;
+}
