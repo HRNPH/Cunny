@@ -1,0 +1,33 @@
+{
+  "name": "@cunny-ai/segment",
+  "version": "0.0.1",
+  "description": "Semantic segmentation in the browser",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean"
+  },
+  "dependencies": {
+    "@cunny-ai/core": "workspace:*",
+    "@cunny-ai/provider-mediapipe": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  },
+  "license": "MIT",
+  "private": true
+}
