@@ -58,6 +58,10 @@ docs(readme): package table
 chore(release): wave 2
 ```
 
+## Automated agents
+
+If you are an automated AI agent operating without human supervision, state that at the top of the PR description. PRs from undisclosed automated accounts are rejected on detection, and the account loses the right to open further PRs here. Disclosed agent work is welcome; it follows the same spec, test, and smoke gates as anyone else.
+
 ## Testing conventions
 
 - Vitest at the repo root, colocated tests, `pnpm vitest run <path>` for a subset.
