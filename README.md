@@ -1,6 +1,14 @@
 # @cunny-ai
 
-Browser AI, one npm package per task. Everything runs locally in the browser: no server, no API keys, no data leaving the device.
+Inference-only AI tasks that run in the browser. One npm package per task, no server, no API keys, no data leaving the device.
+
+## Requirements
+
+- Chrome, Edge, Firefox, or Safari (current and previous major version).
+- An ES module environment (Vite, Next.js, Astro, plain `<script type="module">`).
+- WASM is the baseline. WebGPU is used when present.
+
+## Install
 
 ```bash
 pnpm add @cunny-ai/face-detect
@@ -9,100 +17,153 @@ pnpm add @cunny-ai/face-detect
 ```ts
 import { detect } from '@cunny-ai/face-detect'
 
-const { faces } = await detect(photo) // Blob | File | URL | ImageBitmap | …
+const { faces, elapsedMs } = await detect(photo)
 
 faces[0].score       // 0.92
-faces[0].box         // { x, y, width, height } in pixels
-faces[0].normalized  // same box in [0,1]
+faces[0].box         // { x, y, width, height }, pixels
+faces[0].normalized  // same box, [0,1]
+faces[0].keypoints   // eyes, nose tip, mouth corners
 ```
-
-The model (450KB, Apache-2.0) downloads on the first call with progress events, then lives in the browser cache. Later runs skip the download.
 
 ## Packages
 
-| Package | Task | First load | Status |
+Published (v0.0.x):
+
+| Package | Task | Model | First load |
 |---|---|---|---|
-| `@cunny-ai/face-detect` | Face detection | ~450KB | npm |
-| `@cunny-ai/bg-remove` | Background removal | ~250KB | npm |
-| `@cunny-ai/face-mesh` | 478 landmarks + 52 blendshapes | ~3MB | npm |
-| `@cunny-ai/pose` | Body pose, 33 landmarks | ~5.5MB | npm |
-| `@cunny-ai/segment` | Semantic segmentation, 21 classes | ~3MB | npm |
-| `@cunny-ai/detect` | Object detection, 80 COCO classes | ~4.4MB | npm |
-| `@cunny-ai/embed` | Text embeddings (RAG backbone) | ~23MB | npm |
-| `@cunny-ai/similarity` | Paraphrase / STS scoring | ~23MB | npm |
-| `@cunny-ai/stt` | Speech to text (Moonshine tiny) | ~30MB | npm |
-| `@cunny-ai/provider-onnx` | onnxruntime-web boundary | runtime only | npm |
-| `@cunny-ai/provider-mediapipe` | MediaPipe Tasks boundary | runtime only | npm |
-| `@cunny-ai/core` | Registry, cache, engine | ~2KB | npm |
-| `@cunny-ai/vad` | Voice activity detection | ~2MB | npm |
-| `@cunny-ai/captions` | Live captions (vad + stt) | ~32MB | code complete, browser pass pending |
-| `@cunny-ai/stt-live` | Streaming transcription | ~32MB | npm |
-| `@cunny-ai/tts` | Text to speech (Kokoro, native fallback) | ~85MB or 0 | code complete, browser pass pending |
-| `@cunny-ai/clip` | Image ↔ text zero shot classification | ~50MB | code complete, browser pass pending |
-| `@cunny-ai/depth` | Depth estimation | ~27MB | code complete, browser pass pending |
-| `@cunny-ai/upscale` | 4× photo upscale (Real-ESRGAN) | ~67MB | code complete, browser pass pending |
-| `@cunny-ai/track` | Multi object tracking (ByteTrack) | 0 (rides on detect) | code complete, browser pass pending |
-| `@cunny-ai/ocr` | OCR (PaddleOCR v4 det + rec) | ~16MB | npm |
-| `@cunny-ai/denoise-audio` | Noise suppression (RNNoise, bundled) | 0 | npm |
+| `@cunny-ai/face-detect` | Face detection | blazeface-short | 450KB |
+| `@cunny-ai/bg-remove` | Background removal | selfie segmentation | 250KB |
+| `@cunny-ai/face-mesh` | Face landmarks | face-landmarker | 3MB |
+| `@cunny-ai/pose` | Body pose | pose lite | 5.5MB |
+| `@cunny-ai/segment` | Semantic segmentation | deeplab-v3 | 3MB |
+| `@cunny-ai/detect` | Object detection | efficientdet-lite0 | 4.4MB |
+| `@cunny-ai/embed` | Text embeddings | bge-small q8 | 24MB |
+| `@cunny-ai/similarity` | Paraphrase scoring | bge-small q8 | 24MB |
+| `@cunny-ai/stt` | Speech to text | moonshine-tiny q8 | 30MB |
+| `@cunny-ai/vad` | Voice activity | silero-v5 | 2.3MB |
+| `@cunny-ai/ocr` | Text recognition | paddle-v4 det+rec | 16MB |
+| `@cunny-ai/stt-live` | Streaming transcription | moonshine + silero | 32MB |
+| `@cunny-ai/denoise-audio` | Noise suppression | rnnoise (bundled) | 0 |
+| `@cunny-ai/core` | Registry, cache, engine | — | 2KB |
+| `@cunny-ai/provider-mediapipe` | MediaPipe runtime | — | runtime |
+| `@cunny-ai/provider-onnx` | onnxruntime-web runtime | — | runtime |
 
-A package stays private until it passes the [release standard](docs/releases.md): unit tests plus a browser run against the real model.
+Implemented, held for a browser verification pass: `captions`, `tts`, `clip`, `depth`, `upscale`, `track`.
 
-## Examples
+First load is the model download size. Weights are cached in the Cache API after the first call and are not downloaded again. `embed` and `similarity` share one model repository, so using both downloads it once.
 
-Background removal, one call:
+## API conventions
+
+Every vision task accepts `Blob | File | string (URL) | ImageBitmap | HTMLImageElement | HTMLCanvasElement`. Every audio task accepts files, URLs, or `Float32Array` PCM. Boxes are returned in pixels and normalized to `[0,1]`.
+
+Options common to all tasks:
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `model` | `string` | task default | Registry model id, or a tier: `fast`, `balanced`, `quality` |
+| `onProgress` | `(info: { loaded, total }) => void` | — | Download progress |
+| `acceleration` / `backend` | `'auto' \| 'cpu' \| 'gpu'` | task dependent | Force a backend |
+
+Errors are `Error` instances with a message prefixed `@cunny-ai/<task>:`. They are thrown, never logged.
+
+`models()` on every package lists its registry entries with size and license:
+
+```ts
+import { models } from '@cunny-ai/pose'
+models() // [{ id: 'lite', tier: 'fast', sizeMB: 5.5, license: 'Apache-2.0' }, …]
+```
+
+## Usage by family
+
+Vision, one call:
 
 ```ts
 import { removeBackground } from '@cunny-ai/bg-remove'
+const png: Blob = await removeBackground(imageUrl)
 
-const png = await removeBackground(imageUrl) // Blob, transparent PNG
+import { segment } from '@cunny-ai/segment'
+const { coverage, colored } = await segment(photo) // coverage: { person: 0.53, … }
+
+import { ocr } from '@cunny-ai/ocr'
+const { lines } = await ocr(screenshot) // [{ text, box, confidence }]
 ```
 
-Transcribe audio:
+Vision, realtime over a `<video>`:
+
+```ts
+import { trackObjects } from '@cunny-ai/detect'
+const stop = trackObjects(videoEl, (detections, elapsedMs) => {
+  detections.forEach(d => d.label)   // 'person'
+}, { fps: 20, confidence: 0.5, classes: ['person'] })
+stop()
+```
+
+Audio, files and streams:
 
 ```ts
 import { transcribe } from '@cunny-ai/stt'
+const { text } = await transcribe(audioFile) // decode and resample handled internally
 
-const { text } = await transcribe(audioFile) // 16k mono handled internally
+import { createVAD } from '@cunny-ai/vad'
+const vad = await createVAD({
+  threshold: 0.5,
+  onSegment: (audio, ms) => transcribe(audio),  // fired per utterance
+})
+vad.push(pcm16000)   // Float32Array, any chunk size
+await vad.flush()
+
+import { denoiseStream } from '@cunny-ai/denoise-audio'
+const clean = await denoiseStream(micStream) // MediaStream, wasm bundled, no download
 ```
 
-Objects with boxes and labels:
+Text:
 
 ```ts
-import { detect } from '@cunny-ai/detect'
+import { embed, cosine } from '@cunny-ai/embed'
+const [a, b] = await embed(['invoice received', 'bill got paid'])
+cosine(a, b) // 0.74
 
-const { detections } = await detect(photo, { confidence: 0.5, classes: ['person'] })
+import { similarity } from '@cunny-ai/similarity'
+await similarity('invoice received', 'bill got paid') // 0.8, calibrated [0,1]
 ```
 
-Every vision package takes `Blob | File | URL | ImageBitmap | HTMLImageElement | HTMLCanvasElement`. Every audio package takes files, URLs, or raw `Float32Array` PCM.
+## Model selection
 
-## One API, many models
-
-Each task resolves models from a registry. Pass a model id, a tier (`fast` / `balanced` / `quality`), or nothing for the default:
+Each task resolves weights from a registry. The `model` option takes an exact id or a tier; the default is the balanced entry.
 
 ```ts
-await detectPose(video, { model: 'lite' })   // registry id
-await detectPose(video, { model: 'quality' }) // tier alias
-await detectPose(video)                       // default
+import { detectPose } from '@cunny-ai/pose'
+await detectPose(video, { model: 'lite' })     // exact id
+await detectPose(video, { model: 'quality' })  // tier
+await detectPose(video)                        // default
 ```
 
-Providers (`provider-mediapipe`, `provider-onnx`) pin the ML runtimes once, so two tasks that share a runtime download it once.
+## Self hosting
 
-## Requirements
+```ts
+import { createEngine } from '@cunny-ai/core'
+createEngine({ modelBase: 'https://cdn.mine.com/models' })
 
-- Any modern browser (Chrome, Edge, Firefox, Safari). WASM is the baseline, WebGPU is a transparent speedup.
-- Serving over http(s) or localhost, like any ES module app.
+import { setWasmBase } from '@cunny-ai/provider-mediapipe'
+setWasmBase('/static/mediapipe/wasm')
 
-## Repo layout
+import { setWasmPaths } from '@cunny-ai/provider-onnx'
+setWasmPaths('/static/onnx/')
+```
 
-- `packages/` — one directory per published package
-- `playground/` — live demo hub for every task (`pnpm dev`)
-- `docs/` — architecture, task catalog, roadmap, release standard
-- `website/` — VitePress docs site with generated API reference
+## Repository
 
-Start with [docs/guide/getting-started.md](docs/guide/getting-started.md), then [docs/architecture.md](docs/architecture.md). To add a task, read [CONTRIBUTING.md](CONTRIBUTING.md).
+```
+packages/     one directory per published package
+playground/   demo hub, pnpm dev
+docs/         architecture, task catalog, roadmap, release standard
+website/      VitePress site, generated API reference
+```
 
-## Status
+- [Getting started](docs/guide/getting-started.md)
+- [Architecture](docs/architecture.md)
+- [Task catalog](docs/tasks.md)
+- [Roadmap](docs/roadmaps/roadmap.md)
+- [Contributing](CONTRIBUTING.md)
 
-v0.0.x. 000 through 021 of the roadmap are implemented; the release order and remaining modules live in [docs/roadmaps/roadmap.md](docs/roadmaps/roadmap.md).
-
-MIT licensed. Model licenses are recorded per registry entry and shown in `models()` output.
+MIT. Each model's license is recorded in its registry entry and surfaced by `models()`.
