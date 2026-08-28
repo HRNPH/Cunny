@@ -1,0 +1,17 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "tsconfig": "tsconfig.typedoc.json",
+  "entryPointStrategy": "resolve",
+  "entryPoints": [
+    "packages/core/src/index.ts",
+    "packages/provider-mediapipe/src/index.ts",
+    "packages/face-detect/src/index.ts"
+  ],
+  "out": "docs/api",
+  "plugin": ["typedoc-plugin-markdown"],
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "categorizeByGroup": true,
+  "useCodeBlocks": true,
+  "hidePageHeader": true
+}
