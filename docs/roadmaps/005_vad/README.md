@@ -55,3 +55,8 @@ const stop = vad.start(micStream, {
 
 - Silero's ONNX export quirks (LSTM state resets, opset version), pin the exact export in our registry with hashes
 - Safari AudioWorklet + worker audio transfer needs a portable path (SharedArrayBuffer-free), design constraint from day one, no COOP/COEP requirement in v1
+
+
+## Verification
+
+2026-08-29, playground, real model in-browser: peak speech probability 1.00 on the jfk clip, five segments cut (2.05s, 1.15s, 2.40s, 2.59s, 0.16s), full pass over 11s of 16k PCM in 4.7s wasm. Bugs the pass surfaced and fixed: handler options were dropped in createVAD (probability read 0.00), flush raced the frame drain, state shape was v4's (2,1,64) instead of v5's (2,1,128).

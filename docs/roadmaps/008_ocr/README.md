@@ -58,3 +58,8 @@ const { lines } = await ocr(screenshotBlob, { languages: ['en'] })
 - DB decode subtleties (unclip coefficient, minAreaRect on rotated text), golden tests with reference outputs are non-negotiable
 - Per-language model sprawl, registry must lazy-load strictly per requested language
 - This is the module most likely to reveal "we need a real ONNX provider layer in core", if so, that work lands here and core absorbs it
+
+
+## Verification
+
+2026-08-29, playground, real models in-browser: a canvas-rendered invoice read 6/6 lines word for word (INVOICE #2041, Date, Client, line items, Total: $42.50) at 92 to 100% confidence, det+rec 531ms wasm. Pass also fixed a double-softmax that flattened confidence to 0 while argmax text stayed correct. Rotation heuristic and the 20-image accuracy fixture remain open follow-ups.

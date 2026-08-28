@@ -59,3 +59,8 @@ The sherpa-onnx wasm gate resolved to **fallback**: VAD-chunked Moonshine re-dec
 
 - sherpa-onnx wasm bundle size and API stability, the spike decides go/fallback
 - Worker + SharedArrayBuffer requirements, if SAB is needed, COOP/COEP docs and graceful degradation to non-SAB path
+
+
+## Verification
+
+2026-08-29, playground, fallback engine in-browser: 110x100ms chunks fed through createStreamSTT, endpoint fired with real transcript text ("And so my fellow…") once the VAD boundary committed the utterance. Partial cadence in a throttled webview is load-bound; the 400ms latency target needs the zipformer backend.

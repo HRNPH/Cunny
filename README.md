@@ -34,16 +34,16 @@ The model (450KB, Apache-2.0) downloads on the first call with progress events, 
 | `@cunny-ai/provider-onnx` | onnxruntime-web boundary | runtime only | npm |
 | `@cunny-ai/provider-mediapipe` | MediaPipe Tasks boundary | runtime only | npm |
 | `@cunny-ai/core` | Registry, cache, engine | ~2KB | npm |
-| `@cunny-ai/vad` | Voice activity detection | ~2MB | code complete, browser pass pending |
+| `@cunny-ai/vad` | Voice activity detection | ~2MB | npm |
 | `@cunny-ai/captions` | Live captions (vad + stt) | ~32MB | code complete, browser pass pending |
-| `@cunny-ai/stt-live` | Streaming transcription | ~32MB | code complete, browser pass pending |
+| `@cunny-ai/stt-live` | Streaming transcription | ~32MB | npm |
 | `@cunny-ai/tts` | Text to speech (Kokoro, native fallback) | ~85MB or 0 | code complete, browser pass pending |
 | `@cunny-ai/clip` | Image ↔ text zero shot classification | ~50MB | code complete, browser pass pending |
 | `@cunny-ai/depth` | Depth estimation | ~27MB | code complete, browser pass pending |
 | `@cunny-ai/upscale` | 4× photo upscale (Real-ESRGAN) | ~67MB | code complete, browser pass pending |
 | `@cunny-ai/track` | Multi object tracking (ByteTrack) | 0 (rides on detect) | code complete, browser pass pending |
-| `@cunny-ai/ocr` | OCR (PaddleOCR v4 det + rec) | ~16MB | code complete, browser pass pending |
-| `@cunny-ai/denoise-audio` | Noise suppression (RNNoise, bundled) | 0 | code complete, browser pass pending |
+| `@cunny-ai/ocr` | OCR (PaddleOCR v4 det + rec) | ~16MB | npm |
+| `@cunny-ai/denoise-audio` | Noise suppression (RNNoise, bundled) | 0 | npm |
 
 A package stays private until it passes the [release standard](docs/releases.md): unit tests plus a browser run against the real model.
 

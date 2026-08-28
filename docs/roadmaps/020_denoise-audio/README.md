@@ -53,3 +53,8 @@ peerConnection.addTrack(clean.getAudioTracks()[0])
 
 - Sourcing/validating the wasm build is the whole risk; building from source in CI is the clean answer (emscripten pipeline documented even if we vendor the artifact)
 - RNNoise speech-bias degrades music, documented limitation with before/after samples
+
+
+## Verification
+
+2026-08-29, node oracle plus playground: the vendored wasm eats s16-scale floats, not [-1,1] (jitsi ships the same convention) — unit-scale input read vad 0.00 and passed frames through untouched. After scaling by 32768 in and out, vad spikes to 1.00 on speech, dips on pauses, and the browser demo shows the residual rms drop. SNR harness remains a follow-up.
