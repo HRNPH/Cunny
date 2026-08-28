@@ -1,0 +1,23 @@
+{
+  "name": "cunny-ai-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.34.3",
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' build",
+    "dev": "pnpm --filter playground dev",
+    "typecheck": "pnpm -r --filter './packages/*' exec tsc --noEmit",
+    "test": "pnpm -r --filter './packages/*' test",
+    "docs:gen": "typedoc && node scripts/post-typedoc.mjs",
+    "docs:build": "pnpm docs:gen && pnpm --filter website exec vitepress build",
+    "docs:dev": "pnpm docs:gen && pnpm --filter website exec vitepress dev"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.1",
+    "happy-dom": "^17.6.3",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-markdown": "^4.13.0",
+    "vitest": "^3.2.7",
+    "vue": "^3.5.42"
+  }
+}
