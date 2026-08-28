@@ -56,10 +56,11 @@ async function withFallback<T>(
   acceleration: SessionOptions['acceleration'],
   make: (delegate: 'CPU' | 'GPU') => Promise<T>,
 ): Promise<T> {
+  const accel = acceleration ?? 'auto' // documented default: omitted acceleration behaves like 'auto'
   try {
-    return await make(acceleration === 'cpu' ? 'CPU' : 'GPU')
+    return await make(accel === 'cpu' ? 'CPU' : 'GPU')
   } catch (err) {
-    if (acceleration !== 'auto') throw err
+    if (accel !== 'auto') throw err
     return make('CPU') // GPU delegate unavailable (no WebGL, blocklist) — silently degrade
   }
 }

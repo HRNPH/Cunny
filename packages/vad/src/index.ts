@@ -108,10 +108,8 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
         const p = await inferFrame(frame)
         pending.onProbability?.(p)
         if (p >= threshold) {
-          if (!inSpeech) { speechHang = 0; silenceHang = endHang } // arm hysteresis
-          fireSpeech()
+          fireSpeech(frame)
         } else {
-          if (inSpeech) { silenceHang = 0; speechHang = startHang }
           fireSilence(frame)
         }
       }
@@ -120,10 +118,10 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
     }
   }
 
-  const fireSpeech = () => {
+  const fireSpeech = (frame: Float32Array) => {
     if (!inSpeech) {
+      silenceHang = 0 // arm hysteresis: consecutive-speech counter only
       speechHang += (FRAME / SAMPLE_RATE) * 1000
-      silenceHang = 0
       if (speechHang >= startHang) {
         inSpeech = true
         speechBuf = []
@@ -131,12 +129,17 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
         pending.onSpeechStart?.()
       }
     }
-    if (inSpeech) speechMs += (FRAME / SAMPLE_RATE) * 1000
+    if (inSpeech) {
+      speechBuf.push(...frame) // speech frames belong in the emitted segment
+      speechMs += (FRAME / SAMPLE_RATE) * 1000
+    }
   }
   const fireSilence = (frame: Float32Array) => {
-    if (!inSpeech) return
+    if (!inSpeech) {
+      speechHang = 0 // arm hysteresis: consecutive-silence counter only
+      return
+    }
     silenceHang += (FRAME / SAMPLE_RATE) * 1000
-    speechHang = 0
     if (silenceHang >= endHang) {
       pending.onSpeechEnd?.(speechMs)
       pending.onSegment?.(Float32Array.from(speechBuf), speechMs)

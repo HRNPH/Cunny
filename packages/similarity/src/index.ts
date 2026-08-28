@@ -2,14 +2,16 @@
  * @cunny-ai/similarity — calibrated text similarity over the same bge-small repo as @cunny-ai/embed.
  * Same HF URLs → same browser cache → zero additional model download when embed is (or was) used.
  *
- * Calibration: bge cosines cluster unrelated ≈ 0.55–0.65, related ≈ 0.7+, paraphrase ≈ 0.85+.
- * We remap linearly: score = clamp((cos − 0.55) / 0.45) so 0.5 means "roughly related".
+ * Calibration: measured on bge-small q8 in-browser, raw cosines land at
+ * unrelated ≈ 0.43–0.50, related ≈ 0.6–0.7, paraphrase ≈ 0.74+.
+ * We remap linearly: score = clamp((cos − 0.50) / 0.30) so 0.5 means "roughly
+ * related" and 0.8+ means paraphrase-grade.
  */
 import { listModels, resolveModel } from '@cunny-ai/core'
 
 const TASK = 'similarity'
-const CAL_LO = 0.55
-const CAL_HI = 1.0
+const CAL_LO = 0.50
+const CAL_HI = 0.80
 
 export interface SimilarityOptions {
   model?: string
