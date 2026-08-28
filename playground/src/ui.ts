@@ -52,9 +52,17 @@ export async function showSample(): Promise<Stage> {
   s.vid.hidden = true
   s.img.hidden = false
   s.img.src = sampleUrl
-  await s.img.decode()
-  s.overlay.width = s.img.naturalWidth
-  s.overlay.height = s.img.naturalHeight
+  // decode() can stall indefinitely in a throttled webview; the browser still
+  // paints the image, so race it and move on.
+  await Promise.race([
+    s.img.decode().catch(() => {}),
+    new Promise((resolve) => {
+      if (s.img.complete) resolve(null)
+      else setTimeout(() => resolve(null), 1500)
+    }),
+  ])
+  s.overlay.width = s.img.naturalWidth || 640
+  s.overlay.height = s.img.naturalHeight || 800
   return s
 }
 
@@ -81,4 +89,23 @@ export function drawOverlay(draw: (ctx: CanvasRenderingContext2D, w: number, h: 
   const ctx = c.getContext('2d')!
   ctx.clearRect(0, 0, c.width, c.height)
   draw(ctx, c.width, c.height)
+}
+
+/** Decode any audio url to 16kHz mono Float32Array PCM. */
+export async function decodeTo16kMono(url: string): Promise<Float32Array> {
+  const blob = await (await fetch(url)).blob()
+  const arrayBuf = await blob.arrayBuffer()
+  const ctx = new AudioContext()
+  const buffer = await ctx.decodeAudioData(arrayBuf)
+  await ctx.close()
+  if (buffer.sampleRate === 16_000 && buffer.numberOfChannels === 1) {
+    return buffer.getChannelData(0).slice()
+  }
+  const offline = new OfflineAudioContext(1, Math.ceil(buffer.duration * 16_000), 16_000)
+  const src = offline.createBufferSource()
+  src.buffer = buffer
+  src.connect(offline.destination)
+  src.start()
+  const out = await offline.startRendering()
+  return out.getChannelData(0).slice()
 }

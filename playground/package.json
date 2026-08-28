@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@cunny-ai/bg-remove": "workspace:*",
+    "@cunny-ai/captions": "workspace:*",
     "@cunny-ai/clip": "workspace:*",
     "@cunny-ai/depth": "workspace:*",
     "@cunny-ai/detect": "workspace:*",
@@ -22,6 +23,7 @@
     "@cunny-ai/stt": "workspace:*",
     "@cunny-ai/track": "workspace:*",
     "@cunny-ai/tts": "workspace:*",
+    "@cunny-ai/upscale": "workspace:*",
     "@cunny-ai/vad": "workspace:*",
     "@cunny-ai/vector": "workspace:*"
   },

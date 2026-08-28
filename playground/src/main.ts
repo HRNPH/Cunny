@@ -20,6 +20,10 @@ const DEMOS: Record<string, { title: string; sub: string; name: string }> = {
   embed: { title: '@cunny-ai/embed + @cunny-ai/similarity', sub: 'bge-small · ~23MB · edge RAG backbone', name: 'embed' },
   track: { title: '@cunny-ai/track + @cunny-ai/detect', sub: 'ByteTrack ids over detector · no extra model bytes', name: 'track' },
   tts: { title: '@cunny-ai/tts', sub: 'kokoro-82M q8 · ~85MB first load · native fallback = 0MB', name: 'tts' },
+  stt: { title: '@cunny-ai/stt', sub: 'moonshine-tiny q8 · ~30MB · 16k mono in, text out', name: 'stt' },
+  vad: { title: '@cunny-ai/vad', sub: 'silero-v5 · ~2MB · speech segments from a raw pcm stream', name: 'vad' },
+  upscale: { title: '@cunny-ai/upscale', sub: 'real-esrgan-x4 q8 · ~17MB · pixelated vs esrgan side by side', name: 'upscale' },
+  captions: { title: '@cunny-ai/captions', sub: 'vad + stt combo · utterance captions from a (synthetic) mic', name: 'captions' },
 }
 
 /**
@@ -51,6 +55,11 @@ async function route(id: string) {
     if (typeof (mod as { cleanup?: () => void }).cleanup === 'function') {
       cleanup = (mod as { cleanup: () => void }).cleanup
     }
+    // ?autorun=<buttonId> clicks a demo button from page code — used by the
+    // smoke-test automation (input synthesis is unreliable) and shareable
+    // auto-run links.
+    const autorun = new URLSearchParams(location.search).get('autorun')
+    if (autorun) content.querySelector(`#${autorun}`)?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
   } catch (err) {
     say(`demo failed to load: ${(err as Error).message}`)
   }
