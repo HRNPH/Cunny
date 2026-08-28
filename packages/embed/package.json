@@ -1,0 +1,34 @@
+{
+  "name": "@cunny-ai/embed",
+  "version": "0.0.1",
+  "description": "Local text embeddings",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@cunny-ai/core": "workspace:*",
+    "@huggingface/transformers": "^3.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  },
+  "license": "MIT",
+  "private": true
+}
