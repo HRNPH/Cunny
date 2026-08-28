@@ -1,0 +1,26 @@
+{
+  "name": "playground",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@cunny-ai/bg-remove": "workspace:*",
+    "@cunny-ai/clip": "workspace:*",
+    "@cunny-ai/depth": "workspace:*",
+    "@cunny-ai/detect": "workspace:*",
+    "@cunny-ai/face-detect": "workspace:*",
+    "@cunny-ai/face-mesh": "workspace:*",
+    "@cunny-ai/pose": "workspace:*",
+    "@cunny-ai/segment": "workspace:*",
+    "@cunny-ai/similarity": "workspace:*",
+    "@cunny-ai/track": "workspace:*",
+    "@cunny-ai/tts": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

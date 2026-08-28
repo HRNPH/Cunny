@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@cunny-ai playground</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: #0b0d10; color: #e6e8eb;
+      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      display: flex; min-height: 100vh;
+    }
+    nav {
+      width: 200px; border-right: 1px solid #1d232b; padding: 20px 12px; position: sticky; top: 0;
+      height: 100vh; overflow-y: auto; flex-shrink: 0;
+    }
+    nav h1 { font-size: 15px; margin: 0 8px 12px; }
+    nav h1 code { background: #1a1f26; padding: 2px 7px; border-radius: 6px; font-size: 13px; }
+    nav button {
+      display: block; width: 100%; text-align: left; background: transparent; color: #8b949e;
+      border: none; border-radius: 7px; padding: 7px 10px; font: inherit; font-size: 13.5px; cursor: pointer;
+    }
+    nav button:hover { background: #161b21; color: #e6e8eb; }
+    nav button.active { background: #1d2b45; color: #cfe3ff; }
+    main { flex: 1; padding: 28px; max-width: 900px; }
+    #demo-title { font-size: 18px; font-weight: 650; margin: 0 0 4px; font-family: ui-monospace, monospace; }
+    #demo-sub { color: #8b949e; font-size: 13px; margin: 0 0 16px; }
+    #status { font-size: 13px; color: #8b949e; min-height: 20px; font-family: ui-monospace, monospace; margin-bottom: 12px; }
+    #status .ok { color: #4ade80; }
+    #content button {
+      background: #2563eb; color: white; border: none; border-radius: 8px;
+      padding: 8px 16px; font: inherit; cursor: pointer; margin: 0 8px 12px 0;
+    }
+    #content button:hover { background: #1d4ed8; }
+    #content button:disabled { opacity: 0.5; cursor: default; }
+    #content input[type="text"], #content textarea {
+      background: #111418; color: #e6e8eb; border: 1px solid #2d3742; border-radius: 8px;
+      padding: 8px 10px; font: inherit; width: 100%; margin-bottom: 10px;
+    }
+    #stage { position: relative; max-width: 680px; border-radius: 12px; overflow: hidden; background: #111418; border: 1px solid #222831; }
+    #stage img, #stage video, #stage canvas { display: block; width: 100%; }
+    #stage canvas { position: absolute; inset: 0; pointer-events: none; }
+    #stage.checker { background: repeating-conic-gradient(#20262e 0% 25%, #171c22 0% 50%) 50% / 24px 24px; }
+    #stats { font-family: ui-monospace, monospace; font-size: 12px; color: #8b949e; margin-top: 10px; white-space: pre-wrap; }
+    .bars { max-width: 420px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 13px; }
+    .bar-row .label { width: 140px; text-align: right; color: #8b949e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-row .track { flex: 1; background: #1a1f26; border-radius: 6px; height: 14px; overflow: hidden; }
+    .bar-row .fill { height: 100%; background: #2563eb; }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1><code>@cunny-ai</code></h1>
+    <div id="nav"></div>
+  </nav>
+  <main>
+    <h2 id="demo-title"></h2>
+    <p id="demo-sub"></p>
+    <div id="status">idle</div>
+    <div id="content"></div>
+  </main>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
