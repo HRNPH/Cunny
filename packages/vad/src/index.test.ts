@@ -144,15 +144,12 @@ describe('speech events', () => {
     onSegment: vi.fn(),
     onProbability: vi.fn(),
   })
-  const attach = (vad: unknown, hs: ReturnType<typeof handlers>) =>
-    (vad as { __setHandlers: (h: typeof hs) => void }).__setHandlers(hs)
 
   it('emits start/segment/end with the speech clip and hangover tail included', async () => {
     const { session } = fakeSession([0.9, 0.9, 0.9, 0.9, 0.9, ...new Array(10).fill(0.1)])
     h.createSession.mockResolvedValue(session)
-    const vad = await createVAD()
     const hs = handlers()
-    attach(vad, hs)
+    const vad = await createVAD(hs)
 
     const audio = frames(15, 0)
     audio.fill(0.5, 0, 5 * 512) // speech frames
@@ -181,9 +178,8 @@ describe('speech events', () => {
   it('flush emits the pending segment at stream end and close releases the session', async () => {
     const { session } = fakeSession(0.9)
     h.createSession.mockResolvedValue(session)
-    const vad = await createVAD()
     const hs = handlers()
-    attach(vad, hs)
+    const vad = await createVAD(hs)
 
     vad.push(frames(3, 0.25))
     await vi.waitFor(() => expect(session.run).toHaveBeenCalledTimes(3))
@@ -204,9 +200,8 @@ describe('speech events', () => {
   it('keeps frame-misaligned chunk tails inside the segment', async () => {
     const { session } = fakeSession([...new Array(4).fill(0.9), ...new Array(10).fill(0.1)])
     h.createSession.mockResolvedValue(session)
-    const vad = await createVAD()
     const hs = handlers()
-    attach(vad, hs)
+    const vad = await createVAD(hs)
 
     vad.push(frames(3, 0.5))
     await vi.waitFor(() => expect(session.run).toHaveBeenCalledTimes(3))
@@ -221,17 +216,12 @@ describe('speech events', () => {
 })
 
 describe('options', () => {
-  const attach = (vad: unknown) => {
-    const hs = { onSpeechStart: vi.fn(), onSpeechEnd: vi.fn(), onSegment: vi.fn() }
-    ;(vad as { __setHandlers: (h: typeof hs) => void }).__setHandlers(hs)
-    return hs
-  }
 
   it('treats probabilities below a custom threshold as silence', async () => {
     const { session } = fakeSession(0.7)
     h.createSession.mockResolvedValue(session)
-    const vad = await createVAD({ threshold: 0.8 })
-    const hs = attach(vad)
+    const hs = { onSpeechStart: vi.fn(), onSpeechEnd: vi.fn(), onSegment: vi.fn() }
+    const vad = await createVAD({ threshold: 0.8, ...hs })
 
     vad.push(frames(5, 0))
     await vi.waitFor(() => expect(session.run).toHaveBeenCalledTimes(5))
@@ -244,8 +234,8 @@ describe('options', () => {
   it('requires startHangover worth of speech before firing speechStart', async () => {
     const { session } = fakeSession(0.9)
     h.createSession.mockResolvedValue(session)
-    const vad = await createVAD({ startHangover: 100 })
-    const hs = attach(vad)
+    const hs = { onSpeechStart: vi.fn(), onSpeechEnd: vi.fn(), onSegment: vi.fn() }
+    const vad = await createVAD({ startHangover: 100, ...hs })
 
     vad.push(frames(3, 0)) // 3 * 32ms = 96ms < 100ms
     await vi.waitFor(() => expect(session.run).toHaveBeenCalledTimes(3))
@@ -258,8 +248,9 @@ describe('options', () => {
   it('ends speech after a shorter custom endHangover', async () => {
     const { session } = fakeSession([0.9, 0.9, 0.1, 0.1, 0.1])
     h.createSession.mockResolvedValue(session)
-    const vad = await createVAD({ endHangover: 64 })
-    const hs = attach(vad)
+    const hs0 = { onSpeechStart: vi.fn(), onSpeechEnd: vi.fn(), onSegment: vi.fn() }
+    const vad = await createVAD({ endHangover: 64, ...hs0 })
+    const hs = hs0
 
     vad.push(frames(5, 0))
     await vi.waitFor(() => expect(hs.onSpeechEnd).toHaveBeenCalledOnce())

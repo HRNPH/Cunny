@@ -1,0 +1,30 @@
+{
+  "name": "@cunny-ai/ocr",
+  "version": "0.0.0",
+  "description": "OCR in the browser: PaddleOCR v4 det + rec, pure ONNX pipeline",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@cunny-ai/core": "workspace:*",
+    "@cunny-ai/provider-onnx": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  },
+  "license": "MIT",
+  "private": true
+}

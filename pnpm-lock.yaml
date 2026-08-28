@@ -87,6 +87,15 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  packages/denoise-audio:
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.26)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
   packages/depth:
     dependencies:
       '@cunny-ai/core':
@@ -159,6 +168,22 @@ importers:
       '@cunny-ai/provider-mediapipe':
         specifier: workspace:*
         version: link:../provider-mediapipe
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.26)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
+  packages/ocr:
+    dependencies:
+      '@cunny-ai/core':
+        specifier: workspace:*
+        version: link:../core
+      '@cunny-ai/provider-onnx':
+        specifier: workspace:*
+        version: link:../provider-onnx
     devDependencies:
       tsup:
         specifier: ^8.0.0
@@ -274,6 +299,25 @@ importers:
       '@huggingface/transformers':
         specifier: ^3.0.0
         version: 3.8.1
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.26)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
+  packages/stt-live:
+    dependencies:
+      '@cunny-ai/core':
+        specifier: workspace:*
+        version: link:../core
+      '@cunny-ai/stt':
+        specifier: workspace:*
+        version: link:../stt
+      '@cunny-ai/vad':
+        specifier: workspace:*
+        version: link:../vad
     devDependencies:
       tsup:
         specifier: ^8.0.0

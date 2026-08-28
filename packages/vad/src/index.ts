@@ -44,10 +44,11 @@ export function models() {
   return listModels(TASK)
 }
 
-export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
+export async function createVAD(opts: VadOptions & VadEventHandlers = {}): Promise<VadSession> {
   const threshold = opts.threshold ?? 0.5
   const startHang = opts.startHangover ?? 30
   const endHang = opts.endHangover ?? 250
+  const pending: VadEventHandlers = opts
 
   const model = await getDefaultEngine().loadModel(TASK, { model: opts.model, onProgress: opts.onProgress })
   const session = await createSession(model.bytes) // backend auto
@@ -74,7 +75,7 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
   let speechBuf: number[] = []
   let speechMs = 0
 
-  let pending: VadEventHandlers = {}
+
 
   async function inferFrame(frame: Float32Array): Promise<number> {
     // v5 feeds [context | frame] = 576 samples
@@ -177,9 +178,7 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
     close() {
       session.release()
     },
-    // internal: handler attach point for start()
-    ...( { __setHandlers: (h: VadEventHandlers) => { pending = h } } as object),
-  } as VadSession & { __setHandlers(h: VadEventHandlers): void }
+  } as VadSession
 }
 
 /**
@@ -187,8 +186,7 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
  * inference runs on the main thread (2MB model, ~0.1ms/frame — worker lands with core v1).
  */
 export async function startVAD(stream: MediaStream, handlers: VadEventHandlers, opts: VadOptions = {}): Promise<{ stop: () => void }> {
-  const session = await createVAD(opts)
-  ;(session as unknown as { __setHandlers(h: VadEventHandlers): void }).__setHandlers(handlers)
+  const session = await createVAD({ ...opts, ...handlers })
 
   const ctx = new AudioContext({ sampleRate: SAMPLE_RATE })
   const source = ctx.createMediaStreamSource(stream)

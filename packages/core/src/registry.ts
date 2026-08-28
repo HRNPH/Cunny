@@ -180,8 +180,47 @@ export const TASKS: Record<string, TaskEntry> = {
     models: {
       'silero-v5': {
         provider: '@cunny-ai/provider-onnx', tiers: ['fast', 'balanced'], license: 'MIT', defaultVariant: 'fp32',
-        repo: 'onnx-community/silero-vad', notes: '512-sample frames @16k + 64 context, state (2,1,64).',
+        repo: 'onnx-community/silero-vad', notes: '512-sample frames @16k + 64 context, state (2,1,128).',
         variants: { fp32: { url: 'https://cdn.jsdelivr.net/gh/snakers4/silero-vad@master/src/silero_vad/data/silero_vad.onnx', approxBytes: 2_330_000 } },
+      },
+    },
+  },
+
+  ocr: {
+    defaultModel: 'paddle-v4',
+    models: {
+      'paddle-v4': {
+        provider: '@cunny-ai/provider-onnx', tiers: ['balanced'], license: 'Apache-2.0', defaultVariant: 'det',
+        repo: 'OleehyO/paddleocrv4.onnx',
+        notes: 'PP-OCRv4 mobile. det 4.7MB (DBNet) + rec 10.8MB (Chinese-first, covers ASCII) + ppocr_keys_v1 dict. ~16MB English total.',
+        variants: {
+          det: { url: 'https://huggingface.co/OleehyO/paddleocrv4.onnx/resolve/main/ch_PP-OCRv4_det.onnx', approxBytes: 4_745_000 },
+          rec: { url: 'https://huggingface.co/OleehyO/paddleocrv4.onnx/resolve/main/ch_PP-OCRv4_rec.onnx', approxBytes: 10_826_000 },
+          dict: { url: 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/ppocr/utils/ppocr_keys_v1.txt', approxBytes: 26_250 },
+        },
+      },
+    },
+  },
+
+  'denoise-audio': {
+    defaultModel: 'rnnoise',
+    models: {
+      rnnoise: {
+        provider: 'builtin', tiers: ['fast'], license: 'BSD-2-Clause', defaultVariant: 'bundled',
+        notes: 'Classical RNNoise, vendored wasm (~112KB) ships inside the package. Zero network after install.',
+        variants: { bundled: { url: '', approxBytes: 112_141 } },
+      },
+    },
+  },
+
+  'stt-live': {
+    defaultModel: 'moonshine-tiny',
+    models: {
+      'moonshine-tiny': {
+        provider: 'builtin', tiers: ['fast'], license: 'MIT', defaultVariant: 'q8',
+        repo: 'onnx-community/moonshine-tiny-ONNX',
+        notes: 'Degraded streaming mode: VAD-chunked Moonshine re-decode (the 018 spec fallback). Streaming zipformer via sherpa-onnx wasm remains the planned primary.',
+        variants: { q8: { url: 'huggingface.co/onnx-community/moonshine-tiny-ONNX', approxBytes: 30_000_000 } },
       },
     },
   },
