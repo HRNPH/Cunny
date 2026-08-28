@@ -95,6 +95,10 @@ export function drawOverlay(draw: (ctx: CanvasRenderingContext2D, w: number, h: 
 export async function decodeTo16kMono(url: string): Promise<Float32Array> {
   const blob = await (await fetch(url)).blob()
   const arrayBuf = await blob.arrayBuffer()
+  // Fast path: 16-bit PCM wav parses deterministically with no WebAudio
+  // rendering, which stalls in throttled webviews.
+  const direct = parseWav16kMono(arrayBuf)
+  if (direct) return direct
   const ctx = new AudioContext()
   const buffer = await ctx.decodeAudioData(arrayBuf)
   await ctx.close()
@@ -120,4 +124,46 @@ export function devWasmPaths() {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     void import('@cunny-ai/provider-onnx').then((m) => m.setWasmPaths('/node_modules/onnxruntime-web/dist/'))
   }
+}
+
+
+/**
+ * Parse a 16-bit PCM wav (any common sample rate, any channel count) straight
+ * to 16k mono. Returns null for anything else (float wav, compressed).
+ */
+function parseWav16kMono(buf: ArrayBuffer): Float32Array | null {
+  const v = new DataView(buf)
+  if (v.byteLength < 44 || v.getUint32(0, false) !== 0x52494646) return null // 'RIFF'
+  let offset = 12
+  let fmt = 0
+  let channels = 0
+  let rate = 0
+  let bits = 0
+  while (offset < v.byteLength - 8) {
+    const id = String.fromCharCode(v.getUint8(offset), v.getUint8(offset + 1), v.getUint8(offset + 2), v.getUint8(offset + 3))
+    const size = v.getUint32(offset + 4, true)
+    if (id === 'fmt ') {
+      fmt = v.getUint16(offset + 8, true)
+      channels = v.getUint16(offset + 10, true)
+      rate = v.getUint32(offset + 12, true)
+      bits = v.getUint16(offset + 22, true)
+    } else if (id === 'data') {
+      offset += 8
+      break
+    }
+    offset += 8 + size + (size % 2)
+  }
+  if (fmt !== 1 || bits !== 16 || !channels || !rate || !offset) return null
+  const frame = channels * 2
+  const n = Math.floor((v.byteLength - offset) / frame)
+  const ratio = rate / 16000
+  const m = Math.floor(n / ratio)
+  const out = new Float32Array(m)
+  for (let i = 0; i < m; i++) {
+    const s = Math.min(n - 1, Math.round(i * ratio)) * frame + offset
+    let acc = 0
+    for (let c = 0; c < channels; c++) acc += v.getInt16(s + c * 2, true) / 32768
+    out[i] = acc / channels
+  }
+  return out
 }

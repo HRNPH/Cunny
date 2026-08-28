@@ -21,6 +21,7 @@ export function mount(el: HTMLElement) {
       const arrayBuf = await blob.arrayBuffer()
       const ctx = new AudioContext()
       const buffer = await ctx.decodeAudioData(arrayBuf)
+      await ctx.resume().catch(() => {})
       const src = ctx.createBufferSource()
       src.buffer = buffer
       const dest = ctx.createMediaStreamDestination()

@@ -33,6 +33,7 @@ export function mount(el: HTMLElement) {
       const arrayBuf = await (await fetch(sampleWav)).arrayBuffer()
       const ctx = new AudioContext({ sampleRate: 16_000 })
       const buffer = await ctx.decodeAudioData(arrayBuf)
+      await ctx.resume().catch(() => {})
       const src = ctx.createBufferSource()
       src.buffer = buffer
       const dest = ctx.createMediaStreamDestination()

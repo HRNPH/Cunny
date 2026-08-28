@@ -16,6 +16,9 @@ export function mount(el: HTMLElement) {
     try {
       const audio = await decodeTo16kMono(sampleWav)
       say(`decoded ${(audio.length / 16000).toFixed(1)}s — creating vad session…`)
+      let rms = 0
+      for (let i = 0; i < audio.length; i += 97) rms += audio[i] * audio[i]
+      rms = Math.sqrt(rms / Math.ceil(audio.length / 97))
       const segs: string[] = []
       let peak = 0
       const t0 = performance.now()
@@ -46,7 +49,7 @@ export function mount(el: HTMLElement) {
       vad.close()
       document.getElementById('segs')!.textContent = segs.join('\n') || 'no speech detected'
       say(`done — peak probability ${peak.toFixed(2)}`, true)
-      stats(`fed ${(audio.length / 16000).toFixed(1)}s of 16k PCM · vad pass ${((performance.now() - t0) / 1000).toFixed(1)}s`)
+      stats(`fed ${(audio.length / 16000).toFixed(1)}s of 16k PCM · vad pass ${((performance.now() - t0) / 1000).toFixed(1)}s · input rms ${rms.toFixed(4)}`)
     } catch (e) {
       say(`failed: ${(e as Error).message}`)
     }

@@ -210,6 +210,7 @@ export function ctcDecode(
 ): CtcResult {
   let text = ''
   let probSum = 0
+  let emittedFrames = 0
   let prev = -1
   for (let t = 0; t < timesteps; t++) {
     let best = 0
@@ -223,11 +224,13 @@ export function ctcDecode(
       text += mapping[bestIdx]
     }
     prev = bestIdx
-    if (bestIdx !== blankIndex) probSum += best
+    if (bestIdx !== blankIndex) {
+      probSum += best
+      emittedFrames++
+    }
   }
-  const emitted = Math.max(1, text.length)
-  // mean per-character confidence, over frames that emitted (rough but honest)
-  return { text, confidence: Math.min(1, probSum / (timesteps || 1) * (timesteps / emitted)) }
+  // mean best-class probability over frames that emitted a character
+  return { text, confidence: emittedFrames ? Math.min(1, probSum / emittedFrames) : 0 }
 }
 
 // ---------------------------------------------------------------------------
@@ -350,8 +353,21 @@ export async function ocr(source: OcrSource, opts: OcrOptions = {}): Promise<Ocr
   return { lines, width, height, elapsedMs: performance.now() - t0 }
 }
 
-/** Row-wise softmax over [T, C] logits. */
+/** Row-wise softmax over [T, C] logits. Passes through when the output is already probabilistic. */
 export function softmaxTimesteps(logits: Float32Array, timesteps: number, classes: number): Float32Array {
+  // some rec heads emit post-softmax probabilities; re-softmaxing flattens
+  // them to near-uniform (argmax survives, confidence does not)
+  let probabilistic = true
+  for (let t = 0; t < Math.min(timesteps, 4) && probabilistic; t++) {
+    let sum = 0
+    for (let c = 0; c < classes; c++) {
+      const p = logits[t * classes + c]
+      if (p < 0 || p > 1) { probabilistic = false; break }
+      sum += p
+    }
+    if (Math.abs(sum - 1) > 0.01) probabilistic = false
+  }
+  if (probabilistic) return logits
   const out = new Float32Array(logits.length)
   for (let t = 0; t < timesteps; t++) {
     const base = t * classes

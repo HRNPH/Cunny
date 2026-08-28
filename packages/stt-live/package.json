@@ -31,5 +31,5 @@
     "typescript": "^5.5.0"
   },
   "license": "MIT",
-  "private": true
+  "private": false
 }
