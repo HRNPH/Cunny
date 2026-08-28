@@ -1,6 +1,6 @@
 {
   "name": "@cunny-ai/similarity",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Text similarity",
   "type": "module",
   "main": "./dist/index.js",

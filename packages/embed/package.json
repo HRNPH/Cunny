@@ -1,6 +1,6 @@
 {
   "name": "@cunny-ai/embed",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Local text embeddings",
   "type": "module",
   "main": "./dist/index.js",

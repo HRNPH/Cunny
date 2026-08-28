@@ -1,6 +1,6 @@
 {
   "name": "@cunny-ai/segment",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Semantic segmentation in the browser",
   "type": "module",
   "main": "./dist/index.js",

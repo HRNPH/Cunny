@@ -1,6 +1,6 @@
 {
   "name": "@cunny-ai/vad",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Voice activity detection",
   "type": "module",
   "main": "./dist/index.js",
