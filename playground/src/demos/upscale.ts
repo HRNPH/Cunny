@@ -29,7 +29,7 @@ export function mount(el: HTMLElement) {
       say('input too large for wasm backend', false)
       return
     }
-    say(`loading real-esrgan-x4 q8 (~17MB first time) · est ${est.estMs}ms on wasm…`)
+    say(`loading real-esrgan-x4 fp32 (~67MB first time) · est ${est.estMs}ms on wasm…`)
     const t0 = performance.now()
     try {
       const out = await upscale(crop, { backend: 'wasm', onProgress: progressCb() })

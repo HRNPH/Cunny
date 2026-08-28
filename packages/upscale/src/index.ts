@@ -1,5 +1,5 @@
 /**
- * @cunny-ai/upscale — Real-ESRGAN x4 (q8, ~17MB) via provider-onnx.
+ * @cunny-ai/upscale — Real-ESRGAN x4 (fp32, ~67MB) via provider-onnx.
  * Tensor names resolved at runtime (session.inputNames/outputNames) so any
  * community export of the same graph works. v0: no tiling — inputs capped
  * honestly by backend instead (016 spec's tiling lands with the memory-budget work).

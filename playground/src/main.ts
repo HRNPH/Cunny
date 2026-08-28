@@ -22,7 +22,7 @@ const DEMOS: Record<string, { title: string; sub: string; name: string }> = {
   tts: { title: '@cunny-ai/tts', sub: 'kokoro-82M q8 · ~85MB first load · native fallback = 0MB', name: 'tts' },
   stt: { title: '@cunny-ai/stt', sub: 'moonshine-tiny q8 · ~30MB · 16k mono in, text out', name: 'stt' },
   vad: { title: '@cunny-ai/vad', sub: 'silero-v5 · ~2MB · speech segments from a raw pcm stream', name: 'vad' },
-  upscale: { title: '@cunny-ai/upscale', sub: 'real-esrgan-x4 q8 · ~17MB · pixelated vs esrgan side by side', name: 'upscale' },
+  upscale: { title: '@cunny-ai/upscale', sub: 'real-esrgan-x4 fp32 · ~67MB · pixelated vs esrgan side by side', name: 'upscale' },
   captions: { title: '@cunny-ai/captions', sub: 'vad + stt combo · utterance captions from a (synthetic) mic', name: 'captions' },
 }
 

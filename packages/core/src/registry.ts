@@ -168,9 +168,9 @@ export const TASKS: Record<string, TaskEntry> = {
     defaultModel: 'real-esrgan-x4',
     models: {
       'real-esrgan-x4': {
-        provider: '@cunny-ai/provider-onnx', tiers: ['quality'], license: 'BSD-3-Clause', defaultVariant: 'q8',
-        repo: 'onnx-community/RealESRGAN_x4plus', notes: '4× photo upscale. WebGPU recommended.',
-        variants: { q8: { url: 'huggingface.co/onnx-community/RealESRGAN_x4plus', approxBytes: 17_000_000 } },
+        provider: '@cunny-ai/provider-onnx', tiers: ['quality'], license: 'BSD-3-Clause', defaultVariant: 'fp32',
+        repo: 'anakhiu/realesrgan-onnx', notes: '4× photo upscale, fp32 export (no public q8 export exists; still under the 100MB ceiling). WebGPU recommended.',
+        variants: { fp32: { url: 'https://huggingface.co/anakhiu/realesrgan-onnx/resolve/main/realesrgan_x4plus.onnx', approxBytes: 67_100_000 } },
       },
     },
   },
@@ -181,7 +181,7 @@ export const TASKS: Record<string, TaskEntry> = {
       'silero-v5': {
         provider: '@cunny-ai/provider-onnx', tiers: ['fast', 'balanced'], license: 'MIT', defaultVariant: 'fp32',
         repo: 'onnx-community/silero-vad', notes: '512-sample frames @16k + 64 context, state (2,1,64).',
-        variants: { fp32: { url: 'huggingface.co/onnx-community/silero-vad/resolve/main/silero_vad.onnx', approxBytes: 2_200_000 } },
+        variants: { fp32: { url: 'https://cdn.jsdelivr.net/gh/snakers4/silero-vad@master/src/silero_vad/data/silero_vad.onnx', approxBytes: 2_330_000 } },
       },
     },
   },
