@@ -4,7 +4,7 @@
 |---|---|
 | Package | `@cunny-ai/denoise-audio` |
 | Phase | 2, RAG & vision depth |
-| Status | spec |
+| Status | impl (private, wasm bundled) |
 | Depends on | `@cunny-ai/core` |
 | Model | RNNoise (classical RNN, prebuilt wasm) |
 | Weights | ⚪ ~90KB, **bundled into the package** (bundle rule's first real user) |
@@ -39,7 +39,7 @@ peerConnection.addTrack(clean.getAudioTracks()[0])
 ## Decisions
 
 - **Bundle the wasm** (~90KB) inside the npm package as an asset, no CDN, no cache, works offline from install. Registry entry marked `bundled: true`; core learns the bundled-asset resolution path here
-- Prebuilt wasm sourced from a maintained port (or built once in our CI from the Xiph source and pinned by hash), never a floating third-party CDN
+- Prebuilt wasm vendored from the jitsi/rnnoise-wasm build (112KB + 12KB glue, BSD-2); CI build from Xiph source remains the upgrade path
 - 48kHz native (rnnoise's design rate); resampling only at the edges, documented
 
 ## Acceptance criteria

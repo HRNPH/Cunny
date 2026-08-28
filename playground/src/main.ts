@@ -24,6 +24,9 @@ const DEMOS: Record<string, { title: string; sub: string; name: string }> = {
   vad: { title: '@cunny-ai/vad', sub: 'silero-v5 · ~2MB · speech segments from a raw pcm stream', name: 'vad' },
   upscale: { title: '@cunny-ai/upscale', sub: 'real-esrgan-x4 fp32 · ~67MB · pixelated vs esrgan side by side', name: 'upscale' },
   captions: { title: '@cunny-ai/captions', sub: 'vad + stt combo · utterance captions from a (synthetic) mic', name: 'captions' },
+  ocr: { title: '@cunny-ai/ocr', sub: 'paddle-v4 det+rec · ~16MB · reads a drawn invoice', name: 'ocr' },
+  'stt-live': { title: '@cunny-ai/stt-live', sub: 'streaming stt · vad-chunked moonshine · partials + finals', name: 'stt-live' },
+  'denoise-audio': { title: '@cunny-ai/denoise-audio', sub: 'rnnoise · 112KB bundled · zero network after install', name: 'denoise-audio' },
 }
 
 /**

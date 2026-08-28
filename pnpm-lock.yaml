@@ -411,6 +411,9 @@ importers:
       '@cunny-ai/clip':
         specifier: workspace:*
         version: link:../packages/clip
+      '@cunny-ai/denoise-audio':
+        specifier: workspace:*
+        version: link:../packages/denoise-audio
       '@cunny-ai/depth':
         specifier: workspace:*
         version: link:../packages/depth
@@ -426,6 +429,9 @@ importers:
       '@cunny-ai/face-mesh':
         specifier: workspace:*
         version: link:../packages/face-mesh
+      '@cunny-ai/ocr':
+        specifier: workspace:*
+        version: link:../packages/ocr
       '@cunny-ai/pose':
         specifier: workspace:*
         version: link:../packages/pose
@@ -444,6 +450,9 @@ importers:
       '@cunny-ai/stt':
         specifier: workspace:*
         version: link:../packages/stt
+      '@cunny-ai/stt-live':
+        specifier: workspace:*
+        version: link:../packages/stt-live
       '@cunny-ai/track':
         specifier: workspace:*
         version: link:../packages/track

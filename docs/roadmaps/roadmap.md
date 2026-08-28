@@ -42,7 +42,7 @@ Release & npm publishing blueprint: [`../releases.md`](../releases.md)
 |---|---|---|---|---|
 | 000 | `@cunny-ai/core` | Engine, registry v2 (multi-model/tiers), cache, TaskAdapter seam | ⚪ | **shipped v0.0.1** |
 | P-01 | `@cunny-ai/provider-mediapipe` | Shared mediapipe runtime: version pin, wasm resolution, sessions | ⚪ | **shipped v0.0.1** |
-| P-02 | `@cunny-ai/provider-onnx` | Shared onnxruntime-web runtime: wasm, sessions, tensor utils | ⚪ | impl (private, silero/esrgan unverified) |
+| P-02 | `@cunny-ai/provider-onnx` | Shared onnxruntime-web runtime: wasm, sessions, tensor utils | ⚪ | **shipped v0.0.1** |
 
 *P-numbers mark infrastructure packages. Provider packages are the dedupe boundary, see [`../architecture.md`](../architecture.md). Nothing else ships until core + providers are stable.*
 
@@ -57,7 +57,7 @@ Release & npm publishing blueprint: [`../releases.md`](../releases.md)
 | 005 | `@cunny-ai/vad` | Voice activity detection | 🟢 | impl (private) |
 | 006 | `@cunny-ai/stt` | Speech-to-text (Moonshine) | 🟢 | impl (private) |
 | 007 | `@cunny-ai/pose` | Body pose estimation | 🟢 | impl (private) |
-| 008 | `@cunny-ai/ocr` | OCR (PaddleOCR mobile) | 🟡 | blocked: det/rec weight sourcing |
+| 008 | `@cunny-ai/ocr` | OCR (PaddleOCR mobile) | 🟡 | impl (private, browser smoke pending) |
 | 009 | `@cunny-ai/tts` | Text-to-speech (Kokoro) | 🟠 | impl (private) |
 
 ## Phase 2, RAG & vision depth
@@ -72,9 +72,9 @@ Release & npm publishing blueprint: [`../releases.md`](../releases.md)
 | 015 | `@cunny-ai/depth` | Depth estimation | 🟡 | impl (private) |
 | 016 | `@cunny-ai/upscale` | Photo super-resolution | 🟡 | impl (private) |
 | 017 | `@cunny-ai/track` | Multi-object tracking (ByteTrack) | ⚪ | impl (private) |
-| 018 | `@cunny-ai/stt-live` | Streaming STT (zipformer) | 🟡 | blocked: sherpa-onnx spike |
+| 018 | `@cunny-ai/stt-live` | Streaming STT (zipformer) | 🟡 | impl (private, fallback engine) |
 | 019 | `@cunny-ai/captions` | Live captions combo (vad + stt-live) | 🟡 | impl (private) |
-| 020 | `@cunny-ai/denoise-audio` | Noise suppression (RNNoise) | 🟢 | impl (private) |
+| 020 | `@cunny-ai/denoise-audio` | Noise suppression (RNNoise) | 🟢 | impl (private, wasm bundled) |
 
 ## Phase 3, Face & hand suite
 

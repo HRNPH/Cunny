@@ -4,7 +4,7 @@
 |---|---|
 | Package | `@cunny-ai/stt-live` |
 | Phase | 2, RAG & vision depth |
-| Status | spec |
+| Status | impl (private, fallback engine) |
 | Depends on | `@cunny-ai/core` |
 | Model | sherpa-onnx streaming zipformer small, int8 (~50MB) + sherpa wasm runtime (~10–15MB) |
 | Weights | 🟠 ~60–65MB all-in |
@@ -37,6 +37,10 @@ micFeed(stt)                       // AudioWorklet plumbing provided
 stt.onPartial = (text) => captionEl.textContent = text
 stt.onEndpoint = (finalText) => save(finalText)
 ```
+
+## Decision outcome
+
+The sherpa-onnx wasm gate resolved to **fallback**: VAD-chunked Moonshine re-decode ships as v1 (partials ~2×/s during speech, finals on VAD endpoint). Rationale from the field pass: wasm runtimes inside restricted embedders need single-thread + timeout guards (see provider-onnx), and a 60MB sherpa stack on top is not shippable there yet. The API contract (`feed`/`onPartial`/`onEndpoint`) is engine-agnostic for the zipformer backend.
 
 ## Decisions
 

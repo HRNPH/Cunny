@@ -4,7 +4,7 @@
 |---|---|
 | Package | `@cunny-ai/ocr` |
 | Phase | 1, Launch Nine |
-| Status | spec |
+| Status | impl (private, browser smoke pending) |
 | Depends on | `@cunny-ai/core` |
 | Model | PaddleOCR v4 mobile, det (dbnet ~4.8MB) + per-language rec (CRNN/SVTR ~10MB) + charset dicts |
 | Weights | 🟡 ~15MB English, +~10MB per extra language |
@@ -43,7 +43,7 @@ const { lines } = await ocr(screenshotBlob, { languages: ['en'] })
 ## Decisions
 
 - **Skip the classifier stage v1** (0°/180° detection via det-box aspect heuristic); add cls model only if fixtures prove it's needed
-- Det/rec weights from the onnx-community PaddleOCR exports; charset dict shipped as JSON in the registry (not embedded in package)
+- Det/rec weights from the OleehyO/paddleocrv4.onnx HF export (the onnx-community mirror does not exist); charset dict streamed from PaddlePaddle's repo
 - Tesseract.js stays out, different architecture, worse accuracy/size trade; revisit only for exotic scripts
 
 ## Acceptance criteria

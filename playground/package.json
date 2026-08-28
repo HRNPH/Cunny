@@ -26,7 +26,10 @@
     "@cunny-ai/upscale": "workspace:*",
     "@cunny-ai/vad": "workspace:*",
     "@cunny-ai/vector": "workspace:*",
-    "@cunny-ai/provider-onnx": "workspace:*"
+    "@cunny-ai/provider-onnx": "workspace:*",
+    "@cunny-ai/ocr": "workspace:*",
+    "@cunny-ai/stt-live": "workspace:*",
+    "@cunny-ai/denoise-audio": "workspace:*"
   },
   "devDependencies": {
     "@huggingface/transformers": "3.8.1",
