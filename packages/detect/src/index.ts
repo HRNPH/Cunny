@@ -33,6 +33,10 @@ export interface DetectOptions {
   maxResults?: number
   /** Restrict to classes, e.g. ['person', 'car']. */
   classes?: string[]
+  /**
+   * Defaults to 'cpu': on some GPU setups the efficientdet GPU delegate runs
+   * without error but returns zero detections, so 'auto' is opt-in here.
+   */
   acceleration?: 'auto' | 'cpu' | 'gpu'
   onProgress?: (info: { loaded: number; total: number }) => void
 }
@@ -83,7 +87,7 @@ async function getImageDetector(opts: DetectOptions): Promise<MpObjectDetector> 
   detectorPromise ??= (async () => {
     const model = await getDefaultEngine().loadModel(TASK, { model: opts.model, onProgress: opts.onProgress })
     return createObjectDetector(new Uint8Array(model.bytes), {
-      acceleration: opts.acceleration,
+      acceleration: opts.acceleration ?? 'cpu',
       confidence: opts.confidence,
       maxResults: opts.maxResults,
     })
@@ -127,7 +131,7 @@ export function trackObjects(
       detector ??= (async () => {
         const model = await getDefaultEngine().loadModel(TASK, { model: opts.model, onProgress: opts.onProgress })
         return createObjectDetector(new Uint8Array(model.bytes), {
-          acceleration: opts.acceleration, confidence: opts.confidence,
+          acceleration: opts.acceleration ?? 'cpu', confidence: opts.confidence,
           maxResults: opts.maxResults, runningMode: 'VIDEO',
         })
       })()
