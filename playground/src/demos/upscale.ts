@@ -1,5 +1,5 @@
 import { estimate, upscale } from '@cunny-ai/upscale'
-import { progressCb, say, stats } from '../ui.js'
+import { devWasmPaths, progressCb, say, stats } from '../ui.js'
 import sampleUrl from '../assets/sample.jpg'
 
 export function mount(el: HTMLElement) {
@@ -9,6 +9,7 @@ export function mount(el: HTMLElement) {
     </div>
     <div id="stats"></div>`
   el.querySelector('#run')!.addEventListener('click', async () => {
+    devWasmPaths()
     const canvas = document.getElementById('cmp') as HTMLCanvasElement
     say('cropping a 160×200 face region…')
     // Crop well under the wasm cap; 0.032MP in, 0.512MP out.

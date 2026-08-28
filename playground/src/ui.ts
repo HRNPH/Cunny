@@ -109,3 +109,15 @@ export async function decodeTo16kMono(url: string): Promise<Float32Array> {
   const out = await offline.startRendering()
   return out.getChannelData(0).slice()
 }
+
+/**
+ * Dev-only: serve the onnxruntime-web wasm bits same-origin from vite instead
+ * of the jsdelivr CDN — the CDN fetch inside a throttled webview stalls for
+ * minutes. No effect on library consumers, who keep the CDN default.
+ */
+export function devWasmPaths() {
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    void import('@cunny-ai/provider-onnx').then((m) => m.setWasmPaths('/node_modules/onnxruntime-web/dist/'))
+  }
+}

@@ -102,11 +102,19 @@ describe('createSession', () => {
     expect(opts).toEqual({ executionProviders: ['wasm'] })
   })
 
-  it('uses webgpu alone when explicitly requested', async () => {
+  it('uses webgpu alone when explicitly requested and available', async () => {
+    vi.stubGlobal('navigator', { gpu: {} })
     const create = makeCreate()
     const { mod } = await loadProvider({ create })
     await mod.createSession(bytes(2), { backend: 'webgpu' })
     expect(create.mock.calls[0]![1]).toEqual({ executionProviders: ['webgpu'] })
+  })
+
+  it('rejects explicit webgpu when navigator.gpu is unavailable', async () => {
+    const create = makeCreate()
+    const { mod } = await loadProvider({ create })
+    await expect(mod.createSession(bytes(2), { backend: 'webgpu' })).rejects.toThrow('navigator.gpu is unavailable')
+    expect(create).not.toHaveBeenCalled()
   })
 
   it('auto picks wasm-only when navigator has no gpu adapter', async () => {
@@ -116,12 +124,12 @@ describe('createSession', () => {
     expect(create.mock.calls[0]![1]).toEqual({ executionProviders: ['wasm'] })
   })
 
-  it('auto prefers webgpu with wasm when navigator.gpu exists', async () => {
+  it('auto tries webgpu first when navigator.gpu exists', async () => {
     vi.stubGlobal('navigator', { gpu: {} })
     const create = makeCreate()
     const { mod } = await loadProvider({ create })
     await mod.createSession(bytes(2))
-    expect(create.mock.calls[0]![1]).toEqual({ executionProviders: ['webgpu', 'wasm'] })
+    expect(create.mock.calls[0]![1]).toEqual({ executionProviders: ['webgpu'] })
   })
 
   it('auto falls back to wasm when the preferred providers fail', async () => {
@@ -137,11 +145,12 @@ describe('createSession', () => {
 
     expect(out).toBe(session as never)
     expect(create).toHaveBeenCalledTimes(2)
-    expect(create.mock.calls[0][1].executionProviders).toEqual(['webgpu', 'wasm'])
+    expect(create.mock.calls[0][1].executionProviders).toEqual(['webgpu'])
     expect(create.mock.calls[1][1].executionProviders).toEqual(['wasm'])
   })
 
   it('rethrows without fallback for explicit backends', async () => {
+    vi.stubGlobal('navigator', { gpu: {} })
     const err = new Error('webgpu unavailable')
     const create = vi.fn(async () => {
       throw err

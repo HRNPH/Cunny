@@ -1,7 +1,7 @@
 import { trackObjects } from '@cunny-ai/detect'
 import { createTracker } from '@cunny-ai/track'
 import { drawOverlay, progressCb, releaseWebcam, say, showWebcam, stageHtml, stats } from '../ui.js'
-import sampleUrl from '../assets/sample.jpg'
+import sampleUrl from '../../assets/sample.jpg'
 
 export function mount(el: HTMLElement) {
   el.innerHTML = `<button id="run">Track (webcam)</button><button id="synth">Track (synthetic stream)</button>${stageHtml()}`

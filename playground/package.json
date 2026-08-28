@@ -25,7 +25,8 @@
     "@cunny-ai/tts": "workspace:*",
     "@cunny-ai/upscale": "workspace:*",
     "@cunny-ai/vad": "workspace:*",
-    "@cunny-ai/vector": "workspace:*"
+    "@cunny-ai/vector": "workspace:*",
+    "@cunny-ai/provider-onnx": "workspace:*"
   },
   "devDependencies": {
     "@huggingface/transformers": "3.8.1",

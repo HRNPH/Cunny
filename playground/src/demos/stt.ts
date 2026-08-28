@@ -1,6 +1,6 @@
 import { transcribe } from '@cunny-ai/stt'
 import { progressCb, say, stageHtml, stats } from '../ui.js'
-import sampleWav from '../assets/jfk.wav'
+import sampleWav from '../../assets/jfk.wav'
 
 export function mount(el: HTMLElement) {
   el.innerHTML = `<button id="run">Transcribe sample (11s speech)</button>${stageHtml()}<div id="text" style="margin-top:12px;font-size:15px;line-height:1.6"></div>`

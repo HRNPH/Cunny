@@ -5,9 +5,15 @@ export function mount(el: HTMLElement) {
   el.innerHTML = `<button id="run">Estimate depth</button>${stageHtml()}`
   el.querySelector('#run')!.addEventListener('click', async () => {
     const stage = await showSample()
-    say('loading…')
+    say('loading (~25MB first time)…')
     const t0 = performance.now()
-    const result = await depth(stage.img, { onProgress: progressCb() })
+    let result: Awaited<ReturnType<typeof depth>>
+    try {
+      result = await depth(stage.img, { acceleration: 'webgpu', onProgress: progressCb() })
+    } catch {
+      say('webgpu unavailable or failed — falling back to wasm…')
+      result = await depth(stage.img, { onProgress: progressCb() })
+    }
     const heat = result.toHeatmap()
     // dim original image so the heatmap reads clearly
     stage.img.style.opacity = '0.15'

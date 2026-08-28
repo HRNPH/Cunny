@@ -1,6 +1,6 @@
 import { captionStream } from '@cunny-ai/captions'
 import { say, stats } from '../ui.js'
-import sampleWav from '../assets/jfk.wav'
+import sampleWav from '../../assets/jfk.wav'
 
 export function mount(el: HTMLElement) {
   el.innerHTML = `

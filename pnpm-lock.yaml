@@ -361,6 +361,9 @@ importers:
       '@cunny-ai/bg-remove':
         specifier: workspace:*
         version: link:../packages/bg-remove
+      '@cunny-ai/captions':
+        specifier: workspace:*
+        version: link:../packages/captions
       '@cunny-ai/clip':
         specifier: workspace:*
         version: link:../packages/clip
@@ -382,6 +385,9 @@ importers:
       '@cunny-ai/pose':
         specifier: workspace:*
         version: link:../packages/pose
+      '@cunny-ai/provider-onnx':
+        specifier: workspace:*
+        version: link:../packages/provider-onnx
       '@cunny-ai/search':
         specifier: workspace:*
         version: link:../packages/search
@@ -400,6 +406,9 @@ importers:
       '@cunny-ai/tts':
         specifier: workspace:*
         version: link:../packages/tts
+      '@cunny-ai/upscale':
+        specifier: workspace:*
+        version: link:../packages/upscale
       '@cunny-ai/vad':
         specifier: workspace:*
         version: link:../packages/vad

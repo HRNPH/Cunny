@@ -53,7 +53,7 @@ function fakeSession(probs: number | number[]) {
       stateVal++
       return {
         output: { data: Float32Array.of(next()) },
-        stateN: { data: new Float32Array(2 * 1 * 64).fill(stateVal) },
+        stateN: { data: new Float32Array(2 * 1 * 128).fill(stateVal) },
       }
     }),
     release: vi.fn(),
@@ -131,7 +131,7 @@ describe('frame assembly', () => {
     const at = (i: number) => (feedsList[i]!['state']!.data as Float32Array)[0]
     expect(at(500)).toBe(500)
     // frame index 937 (0-based): sinceReset crossed 30s → state reset to zeros before inference
-    expect(Array.from(feedsList[937]!['state']!.data as Float32Array)).toEqual(new Array(128).fill(0))
+    expect(Array.from(feedsList[937]!['state']!.data as Float32Array)).toEqual(new Array(256).fill(0))
     // and inference resumes from the state emitted by frame 937
     expect(at(938)).toBe(938)
   })
@@ -189,7 +189,7 @@ describe('speech events', () => {
     await vi.waitFor(() => expect(session.run).toHaveBeenCalledTimes(3))
     expect(hs.onSpeechStart).toHaveBeenCalledOnce()
 
-    vad.flush()
+    await vad.flush()
     expect(hs.onSpeechEnd).toHaveBeenCalledWith(96)
     expect(hs.onSegment).toHaveBeenCalledOnce()
     const [segment, durationMs] = hs.onSegment.mock.calls[0] as [Float32Array, number]
@@ -235,7 +235,7 @@ describe('options', () => {
 
     vad.push(frames(5, 0))
     await vi.waitFor(() => expect(session.run).toHaveBeenCalledTimes(5))
-    vad.flush()
+    await vad.flush()
 
     expect(hs.onSpeechStart).not.toHaveBeenCalled()
     expect(hs.onSegment).not.toHaveBeenCalled()
@@ -337,7 +337,7 @@ describe('startVAD wiring', () => {
     expect(session.run).toHaveBeenCalledOnce()
 
     stop()
-    expect(handlers.onSegment).toHaveBeenCalledOnce() // flush emitted the pending segment
+    await vi.waitFor(() => expect(handlers.onSegment).toHaveBeenCalledOnce()) // flush emitted the pending segment
     expect(session.release).toHaveBeenCalledOnce()
     expect(graph.ctx.close).toHaveBeenCalled()
     expect(graph.source.disconnect).toHaveBeenCalled()

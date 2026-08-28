@@ -9,7 +9,9 @@ export default defineConfig({
       '@mediapipe/tasks-vision',
       '@huggingface/transformers',
       'kokoro-js',
-      'onnxruntime-web',
     ],
+    // ort's loader resolves its wasm glue via import.meta.url-relative dynamic
+    // imports; pre-bundling breaks that chain and session creation deadlocks.
+    exclude: ['onnxruntime-web'],
   },
 })

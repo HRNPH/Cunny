@@ -21,6 +21,12 @@ export async function getOrt(): Promise<Ort> {
   try {
     ortPromise ??= import('onnxruntime-web').then((m) => {
       m.env.wasm.wasmPaths = wasmPaths
+      // The threaded wasm build needs SharedArrayBuffer, and its worker spin-up
+      // can deadlock silently inside restricted embedders (in-app webviews,
+      // sandboxed iframes) even when the capability probe passes. Single thread
+      // is the deterministic baseline; WebGPU is the fast path.
+      m.env.wasm.numThreads = 1
+      m.env.wasm.proxy = false
       return m
     })
     return await ortPromise
@@ -37,17 +43,31 @@ export async function createSession(
 ): Promise<import('onnxruntime-web').InferenceSession> {
   const ort = await getOrt()
   const backend = opts.backend ?? 'auto'
-  const providers =
-    backend === 'wasm' ? ['wasm']
-    : backend === 'webgpu' ? ['webgpu']
-    : typeof navigator !== 'undefined' && 'gpu' in navigator ? ['webgpu', 'wasm']
-    : ['wasm']
 
+  const create = (providers: string[]) =>
+    ort.InferenceSession.create(new Uint8Array(bytes), { executionProviders: providers as never })
+
+  if (backend === 'wasm') return create(['wasm'])
+
+  const hasGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
+  if (backend === 'webgpu' || !hasGpu) {
+    if (backend === 'webgpu' && !hasGpu) {
+      throw new Error('@cunny-ai/provider-onnx: webgpu requested but navigator.gpu is unavailable')
+    }
+    return create([backend === 'webgpu' ? 'webgpu' : 'wasm'])
+  }
+
+  // auto: some embedders expose navigator.gpu but never produce an adapter,
+  // and session creation then hangs instead of rejecting. Race it.
   try {
-    return await ort.InferenceSession.create(new Uint8Array(bytes), { executionProviders: providers })
-  } catch (err) {
-    if (backend !== 'auto') throw err
-    return ort.InferenceSession.create(new Uint8Array(bytes), { executionProviders: ['wasm'] })
+    return await Promise.race([
+      create(['webgpu']),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('@cunny-ai/provider-onnx: webgpu session creation timed out')), 4000),
+      ),
+    ])
+  } catch {
+    return create(['wasm'])
   }
 }
 

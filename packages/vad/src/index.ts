@@ -1,7 +1,7 @@
 /**
  * @cunny-ai/vad — Silero VAD v5 (~2MB ONNX) via the shared provider-onnx runtime.
  * Frame protocol (silero-v5): 512-sample frames @16k + 64 samples of trailing context,
- * state tensor (2,1,64), context state reset every ~30s to avoid LSTM drift.
+ * state tensor (2,1,128), context state reset every ~30s to avoid LSTM drift.
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createSession, getOrt } from '@cunny-ai/provider-onnx'
@@ -36,7 +36,7 @@ export interface VadSession {
   /** Feed 16k mono PCM incrementally (any chunk size; framed internally). */
   push(audio: Float32Array): void
   /** Flush the pending tail as a final segment (call at stream end). */
-  flush(): void
+  flush(): Promise<void>
   close(): void
 }
 
@@ -58,12 +58,12 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
   const srName = session.inputNames.find((n) => /sr|rate/i.test(n)) ?? 'sr'
   const outProb = session.outputNames.find((n) => /output/i.test(n) && !/state/i.test(n)) ?? session.outputNames[0]
 
-  let state = new Float32Array(2 * 1 * 64)
+  let state = new Float32Array(2 * 1 * 128)
   let context = new Float32Array(CONTEXT)
   let sinceReset = 0
 
   const resetState = () => {
-    state = new Float32Array(2 * 1 * 64)
+    state = new Float32Array(2 * 1 * 128)
     context = new Float32Array(CONTEXT)
     sinceReset = 0
   }
@@ -85,7 +85,7 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
 
     const feeds: Record<string, import('onnxruntime-web').Tensor> = {
       [inputName]: new ort.Tensor('float32', input, [1, input.length]),
-      [stateName]: new ort.Tensor('float32', state, [2, 1, 64]),
+      [stateName]: new ort.Tensor('float32', state, [2, 1, 128]),
       [srName]: new ort.Tensor('int64', BigInt64Array.from([BigInt(SAMPLE_RATE)]), []),
     }
     const out = await session.run(feeds)
@@ -96,8 +96,9 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
 
   const frameQueue: Float32Array[] = []
   let draining = false
+  let drainPromise: Promise<void> = Promise.resolve()
 
-  const drain = async () => {
+  const drain = async (): Promise<void> => {
     if (draining) return
     draining = true
     try {
@@ -160,9 +161,11 @@ export async function createVAD(opts: VadOptions = {}): Promise<VadSession> {
         offset += FRAME
       }
       if (offset < audio.length && inSpeech) speechBuf.push(...audio.slice(offset))
-      void drain()
+      drainPromise = drain()
     },
-    flush() {
+    /** Flush the pending tail as a final segment. Awaits queued frames first. */
+    async flush(): Promise<void> {
+      await drainPromise
       if (inSpeech) {
         pending.onSpeechEnd?.(speechMs)
         pending.onSegment?.(Float32Array.from(speechBuf), speechMs)
@@ -214,11 +217,12 @@ registerProcessor('cunny-ai-vad-frame', VADFrame)`
 
   return {
     stop: () => {
-      session.flush()
-      session.close()
-      source.disconnect()
-      node.disconnect()
-      void ctx.close()
+      void session.flush().finally(() => {
+        session.close()
+        source.disconnect()
+        node.disconnect()
+        void ctx.close()
+      })
     },
   }
 }
