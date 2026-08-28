@@ -8,6 +8,7 @@ concurrency: release
 
 permissions:
   contents: write # changesets pushes version tags
+  pull-requests: write # changesets opens the version PR
 
 jobs:
   publish:
