@@ -1,6 +1,6 @@
 {
   "name": "@cunny-ai/detect",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Object detection in the browser",
   "type": "module",
   "main": "./dist/index.js",
