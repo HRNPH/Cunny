@@ -1,0 +1,29 @@
+{
+  "name": "@cunny-ai/core",
+  "version": "0.0.3",
+  "description": "Model registry, cached loading and engine for @cunny-ai packages",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}
