@@ -52,10 +52,14 @@ export async function createDenoiser(): Promise<Denoiser> {
       if (frame.length !== FRAME_SIZE) {
         throw new Error(`@cunny-ai/denoise-audio: expected ${FRAME_SIZE} samples, got ${frame.length}`)
       }
-      heap.set(frame, inPtr >> 2)
+      // This build of the model eats s16-scale floats (jitsi ships the same
+      // convention), so [-1,1] PCM goes in scaled and comes back unscaled.
+      for (let i = 0; i < FRAME_SIZE; i++) heap[(inPtr >> 2) + i] = frame[i] * 32768
       const vad = mod._rnnoise_process_frame(ctx, outPtr, inPtr)
       // slice() copies out of the wasm heap before any grow invalidates views
-      return { frame: heap.slice(outPtr >> 2, (outPtr >> 2) + FRAME_SIZE), vad }
+      const raw = heap.slice(outPtr >> 2, (outPtr >> 2) + FRAME_SIZE)
+      for (let i = 0; i < FRAME_SIZE; i++) raw[i] /= 32768
+      return { frame: raw, vad }
     },
     destroy() {
       if (!ctx) return
@@ -136,9 +140,11 @@ class RnnoiseProcessor extends AudioWorkletProcessor {
           this.filled = 0
           if (this.mod && this.ctx) {
             const heap = this.mod.HEAPF32
-            heap.set(this.buf, this.inPtr >> 2)
+            for (let i = 0; i < ${FRAME_SIZE}; i++) heap[(this.inPtr >> 2) + i] = this.buf[i] * 32768
             this.mod._rnnoise_process_frame(this.ctx, this.outPtr, this.inPtr)
-            this.queue.push(Float32Array.from(heap.subarray(this.outPtr >> 2, (this.outPtr >> 2) + ${FRAME_SIZE})))
+            const cleaned = new Float32Array(${FRAME_SIZE})
+            for (let i = 0; i < ${FRAME_SIZE}; i++) cleaned[i] = heap[(this.outPtr >> 2) + i] / 32768
+            this.queue.push(cleaned)
           }
         }
       }
