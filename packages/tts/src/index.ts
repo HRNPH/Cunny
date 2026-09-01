@@ -181,7 +181,7 @@ export async function speak(text: string, opts: SpeakOptions = {}): Promise<Utte
         // generation still running: poll until it settles or a chunk lands
         finished = await Promise.race([
           generatePromise.then(() => true),
-          new Promise((r) => setTimeout(() => r(false), 50)),
+          new Promise<boolean>((r) => setTimeout(() => r(false), 50)),
         ])
       }
     },
