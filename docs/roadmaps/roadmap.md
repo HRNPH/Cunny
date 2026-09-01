@@ -32,7 +32,7 @@ Release & npm publishing blueprint: [`../releases.md`](../releases.md)
 
 `planned` → `spec` (this doc written) → `in-progress` → `impl (private)` (code complete + building, held private until browser-verified) → `shipped`
 
-**Release log:** 2026-08-28, v0.0.1 shipped: `@cunny-ai/core`, `@cunny-ai/provider-mediapipe`, `@cunny-ai/face-detect` (browser-verified trio). 15 further packages implemented and building clean but private pending verification, flip `private` per package as its acceptance criteria pass. Held private pending a foreground browser pass: captions, tts, clip, depth, upscale, track.
+**Release log:** 2026-08-28, v0.0.1 shipped: `@cunny-ai/core`, `@cunny-ai/provider-mediapipe`, `@cunny-ai/face-detect` (browser-verified trio). 15 further packages implemented and building clean but private pending verification, flip `private` per package as its acceptance criteria pass. Held private: captions (needs a live audio clock), clip and depth (large conv-model wasm compile wedges in embedded webviews; fine in normal browsers, pass pending there).
 
 ---
 
@@ -58,7 +58,7 @@ Release & npm publishing blueprint: [`../releases.md`](../releases.md)
 | 006 | `@cunny-ai/stt` | Speech-to-text (Moonshine) | 🟢 | impl (private) |
 | 007 | `@cunny-ai/pose` | Body pose estimation | 🟢 | impl (private) |
 | 008 | `@cunny-ai/ocr` | OCR (PaddleOCR mobile) | 🟡 | **shipped v0.0.1** |
-| 009 | `@cunny-ai/tts` | Text-to-speech (Kokoro) | 🟠 | impl (private) |
+| 009 | `@cunny-ai/tts` | Text-to-speech (Kokoro) | 🟠 | **shipped v0.0.1** |
 
 ## Phase 2, RAG & vision depth
 
@@ -70,8 +70,8 @@ Release & npm publishing blueprint: [`../releases.md`](../releases.md)
 | 013 | `@cunny-ai/clip` | Image↔text search | 🟠 | impl (private) |
 | 014 | `@cunny-ai/segment` | Semantic segmentation | 🟢 | impl (private) |
 | 015 | `@cunny-ai/depth` | Depth estimation | 🟡 | impl (private) |
-| 016 | `@cunny-ai/upscale` | Photo super-resolution | 🟡 | impl (private) |
-| 017 | `@cunny-ai/track` | Multi-object tracking (ByteTrack) | ⚪ | impl (private) |
+| 016 | `@cunny-ai/upscale` | Photo super-resolution | 🟡 | **shipped v0.0.1** |
+| 017 | `@cunny-ai/track` | Multi-object tracking (ByteTrack) | ⚪ | **shipped v0.0.1** |
 | 018 | `@cunny-ai/stt-live` | Streaming STT (zipformer) | 🟡 | **shipped v0.0.1** (fallback engine) |
 | 019 | `@cunny-ai/captions` | Live captions combo (vad + stt-live) | 🟡 | impl (private) |
 | 020 | `@cunny-ai/denoise-audio` | Noise suppression (RNNoise) | 🟢 | **shipped v0.0.1** |

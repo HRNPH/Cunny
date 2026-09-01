@@ -170,14 +170,19 @@ export async function speak(text: string, opts: SpeakOptions = {}): Promise<Utte
     sampleRate,
     async play() {
       let played = 0
+      let finished = false
       // Sequential playback that waits for generation to keep up.
       for (;;) {
         if (played < chunks.length) {
           await playPcm(chunks[played++], sampleRate)
-        } else {
-          await Promise.race([generatePromise, new Promise((r) => setTimeout(r, 50))])
-          if (played >= chunks.length) break
+          continue
         }
+        if (finished) break
+        // generation still running: poll until it settles or a chunk lands
+        finished = await Promise.race([
+          generatePromise.then(() => true),
+          new Promise((r) => setTimeout(() => r(false), 50)),
+        ])
       }
     },
     stop() {

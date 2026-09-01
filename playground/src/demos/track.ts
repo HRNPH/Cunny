@@ -56,7 +56,11 @@ async function runSynthetic(el: HTMLElement) {
   const ctx = canvas.getContext('2d')!
   const stream = canvas.captureStream(20)
   vid.srcObject = stream
-  await vid.play()
+  // play() can stall in throttled webviews; the stream produces frames regardless
+  await Promise.race([
+    vid.play().catch(() => {}),
+    new Promise((r) => setTimeout(r, 1500)),
+  ])
 
   const tracker = createTracker({ minHits: 2, maxAge: 1500 })
   say('loading detector…')

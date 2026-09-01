@@ -1,6 +1,6 @@
 import { estimate, upscale } from '@cunny-ai/upscale'
 import { devWasmPaths, progressCb, say, stats } from '../ui.js'
-import sampleUrl from '../assets/sample.jpg'
+import sampleUrl from '../../assets/sample.jpg'
 
 export function mount(el: HTMLElement) {
   el.innerHTML = `<button id="run">Upscale 4× (face crop)</button>

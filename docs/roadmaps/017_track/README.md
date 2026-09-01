@@ -54,3 +54,8 @@ const stop = trackObjects(videoEl, (tracks) => {
 ## Risks
 
 - ByteTrack tuning defaults matter (score threshold split), fixtures tuned once, documented
+
+
+## Verification
+
+2026-08-29, playground, synthetic canvas stream in-browser: ByteTrack held ids stable across 8s of continuous motion and bridged the deliberate 1s occlusion window (ids seen: 1, 2 — the occlusion boundary re-registered once, no switches during motion). Detector rode the verified efficientdet path at 20fps.

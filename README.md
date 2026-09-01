@@ -48,7 +48,11 @@ Published (v0.0.x):
 | `@cunny-ai/provider-mediapipe` | MediaPipe runtime | — | runtime |
 | `@cunny-ai/provider-onnx` | onnxruntime-web runtime | — | runtime |
 
-Implemented, held for a browser verification pass: `captions`, `tts`, `clip`, `depth`, `upscale`, `track`.
+| `@cunny-ai/tts` | Text to speech | kokoro-82M q8 | 85MB |
+| `@cunny-ai/upscale` | 4× image upscale | real-esrgan fp32 | 67MB |
+| `@cunny-ai/track` | Multi object tracking | bytetrack | 0 |
+
+Held for verification in a desktop browser: `captions`, `clip`, `depth`.
 
 First load is the model download size. Weights are cached in the Cache API after the first call and are not downloaded again. `embed` and `similarity` share one model repository, so using both downloads it once.
 

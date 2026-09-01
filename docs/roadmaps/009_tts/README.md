@@ -62,3 +62,8 @@ voices()        // [{ id: 'af_heart', lang: 'en-US', gender: 'female', sizeKB }]
 - Largest download in Phase 1, playground must show progress honestly and offer native tier while downloading
 - Phonemizer edge cases (numbers, abbreviations), fixture tests with tricky strings
 - int8 quantization artifacts on some voices, voice curation includes a listen-test checklist
+
+
+## Verification
+
+2026-08-29, playground, kokoro-82M q8 in-browser: 6.7s of 24kHz speech generated and played from the demo text, total 19s including first load and synthesis; the synthesized waveform drawn in the demo. Native tier verified separately (0MB, OS voices). The pass also fixed play() returning before the first chunk finished generating.

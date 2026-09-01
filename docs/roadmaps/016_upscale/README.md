@@ -58,3 +58,8 @@ const bigger = await upscale(oldPhoto, {
 
 - WebGPU device-loss on weak GPUs, graceful `BackendUnavailableError` with retry guidance
 - Real-ESRGAN license is BSD-3 but **model file hosting** must be our registry (some mirrors are ambiguous), pin hashes
+
+
+## Verification
+
+2026-08-29, playground, real fp32 export in-browser: 160×200 face crop upscaled to 640×800 in 27.7s on single-thread wasm (the registry now points at the anakhiu fp32 export, 67MB; no public q8 export exists). Side-by-side against nearest-neighbor 4× shows the expected sharpening. Tiling remains a follow-up; inputs above 0.5MP are rejected on wasm.
