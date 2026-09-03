@@ -54,3 +54,8 @@ subjectBox // { x, y, width, height } of nearest subject, pairs with bg-effects/
 
 - Relative depth mis-expectations ("is it in meters?", no; docs lead with this)
 - GPU delegate numerics, fixture tolerance bands instead of exact match on the WebGPU path
+
+
+## Verification
+
+2026-09-03, manual pass by the maintainer in a desktop browser: depth-anything-v2-small q8 (27MB) produced the heatmap and subject box. Same embedded-webview compile limitation as clip; the demo tries webgpu first and falls back to wasm.

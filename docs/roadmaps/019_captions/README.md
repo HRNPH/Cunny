@@ -58,3 +58,8 @@ const stop = captionStream(micStream, {
 
 - Mic permission UX is the real-world blocker (not tech), playground ships a permissions-failure state guide
 - Interim/final flicker needs event coalescing, reference implementation tested for visual stability
+
+
+## Verification
+
+2026-09-03, manual pass by the maintainer in a desktop browser: the vad + stt pipeline produced utterance captions from a live mic. Both component engines were already machine-verified individually (vad: peak 1.00, five segments; stt: word-perfect transcript); this pass covered the MediaStream wiring.

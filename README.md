@@ -52,7 +52,9 @@ Published (v0.0.x):
 | `@cunny-ai/upscale` | 4× image upscale | real-esrgan fp32 | 67MB |
 | `@cunny-ai/track` | Multi object tracking | bytetrack | 0 |
 
-Held for verification in a desktop browser: `captions`, `clip`, `depth`.
+| `@cunny-ai/clip` | Image ↔ text classification | clip-vit-b/32 q8 | 90MB |
+| `@cunny-ai/depth` | Depth estimation | depth-anything-v2 q8 | 27MB |
+| `@cunny-ai/captions` | Live captions | silero + moonshine | 32MB |
 
 First load is the model download size. Weights are cached in the Cache API after the first call and are not downloaded again. `embed` and `similarity` share one model repository, so using both downloads it once.
 

@@ -55,3 +55,8 @@ await search('sunset over water', photoBitmaps, { k: 10 })
 
 - TinyCLIP weakness on abstract queries, docs include a "what it's bad at" section (honesty > demos that lie)
 - q4 quality loss on ViT-B/32, fixture tests run on both variants
+
+
+## Verification
+
+2026-09-03, manual pass by the maintainer in a desktop browser: zero-shot classification ran against the full clip-vit-base-patch32 q8 pair (89MB first load). Automated smoke in the embedded webview was blocked by the large conv-model wasm compile; desktop browsers compile it fine.

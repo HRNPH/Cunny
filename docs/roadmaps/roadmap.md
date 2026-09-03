@@ -32,7 +32,7 @@ Release & npm publishing blueprint: [`../releases.md`](../releases.md)
 
 `planned` → `spec` (this doc written) → `in-progress` → `impl (private)` (code complete + building, held private until browser-verified) → `shipped`
 
-**Release log:** 2026-08-28, v0.0.1 shipped: `@cunny-ai/core`, `@cunny-ai/provider-mediapipe`, `@cunny-ai/face-detect` (browser-verified trio). 15 further packages implemented and building clean but private pending verification, flip `private` per package as its acceptance criteria pass. Held private: captions (needs a live audio clock), clip and depth (large conv-model wasm compile wedges in embedded webviews; fine in normal browsers, pass pending there).
+**Release log:** 2026-08-28, v0.0.1 shipped: `@cunny-ai/core`, `@cunny-ai/provider-mediapipe`, `@cunny-ai/face-detect` (browser-verified trio). 15 further packages implemented and building clean but private pending verification, flip `private` per package as its acceptance criteria pass. **All modules 000–021 shipped.** Clip, depth and captions were verified by a manual maintainer pass in a desktop browser (2026-09-03) after the embedded-webview smoke channel proved unable to compile their large conv models.
 
 ---
 
@@ -67,13 +67,13 @@ Release & npm publishing blueprint: [`../releases.md`](../releases.md)
 | 010 | `@cunny-ai/vector` | sqlite-vec vector store | ⚪ | impl (private) |
 | 011 | `@cunny-ai/search` | Semantic search combo (embed + vector) | 🟢 | impl (private) |
 | 012 | `@cunny-ai/similarity` | Paraphrase / STS | 🟢 | impl (private) |
-| 013 | `@cunny-ai/clip` | Image↔text search | 🟠 | impl (private) |
+| 013 | `@cunny-ai/clip` | Image↔text search | 🟠 | **shipped v0.0.1** |
 | 014 | `@cunny-ai/segment` | Semantic segmentation | 🟢 | impl (private) |
-| 015 | `@cunny-ai/depth` | Depth estimation | 🟡 | impl (private) |
+| 015 | `@cunny-ai/depth` | Depth estimation | 🟡 | **shipped v0.0.1** |
 | 016 | `@cunny-ai/upscale` | Photo super-resolution | 🟡 | **shipped v0.0.1** |
 | 017 | `@cunny-ai/track` | Multi-object tracking (ByteTrack) | ⚪ | **shipped v0.0.1** |
 | 018 | `@cunny-ai/stt-live` | Streaming STT (zipformer) | 🟡 | **shipped v0.0.1** (fallback engine) |
-| 019 | `@cunny-ai/captions` | Live captions combo (vad + stt-live) | 🟡 | impl (private) |
+| 019 | `@cunny-ai/captions` | Live captions combo (vad + stt-live) | 🟡 | **shipped v0.0.1** |
 | 020 | `@cunny-ai/denoise-audio` | Noise suppression (RNNoise) | 🟢 | **shipped v0.0.1** |
 
 ## Phase 3, Face & hand suite

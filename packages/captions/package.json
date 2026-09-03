@@ -1,6 +1,6 @@
 {
   "name": "@cunny-ai/captions",
-  "version": "0.0.3",
+  "version": "0.0.1",
   "description": "Live captions",
   "type": "module",
   "main": "./dist/index.js",
@@ -31,5 +31,5 @@
     "typescript": "^5.5.0"
   },
   "license": "MIT",
-  "private": true
+  "private": false
 }
