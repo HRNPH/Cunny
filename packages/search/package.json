@@ -1,6 +1,6 @@
 {
   "name": "@cunny-ai/search",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Local semantic search",
   "type": "module",
   "main": "./dist/index.js",
@@ -31,5 +31,5 @@
     "typescript": "^5.5.0"
   },
   "license": "MIT",
-  "private": true
+  "private": false
 }

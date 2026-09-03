@@ -55,6 +55,8 @@ Published (v0.0.x):
 | `@cunny-ai/clip` | Image ↔ text classification | clip-vit-b/32 q8 | 90MB |
 | `@cunny-ai/depth` | Depth estimation | depth-anything-v2 q8 | 27MB |
 | `@cunny-ai/captions` | Live captions | silero + moonshine | 32MB |
+| `@cunny-ai/vector` | Vector store | pure TS | 0 |
+| `@cunny-ai/search` | Semantic search | embed + vector | 24MB |
 
 First load is the model download size. Weights are cached in the Cache API after the first call and are not downloaded again. `embed` and `similarity` share one model repository, so using both downloads it once.
 

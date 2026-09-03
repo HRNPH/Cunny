@@ -54,3 +54,8 @@ const hits = await search.search('quarterly payment terms')
 ## Risks
 
 - Chunking quality dominates perceived quality, fixture queries adversarial (paraphrases rather than keyword matches)
+
+
+## Verification
+
+2026-09-03: shipped on unit tests (chunkText boundaries, embedding + vector store composition) over the individually browser-verified embed engine. No additional weights.

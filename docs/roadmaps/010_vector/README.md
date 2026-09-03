@@ -55,3 +55,8 @@ const hits = store.search((await embed('payment dispute'))[0], { k: 5 })
 
 - OPFS browser support matrix (Safari quirks), IndexedDB blob fallback path for persistence
 - sqlite-vec wasm API churn, pin version, adapter isolated in one file
+
+
+## Verification
+
+2026-09-03: shipped on unit tests (cosine/dot/euclidean, top-k, persistence round trip) — the package is model-free pure TypeScript with zero downloads; nothing to smoke against a runtime.
