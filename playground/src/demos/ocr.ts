@@ -10,14 +10,14 @@ function textCanvas(): HTMLCanvasElement {
   ctx.fillStyle = '#f8f6f1'
   ctx.fillRect(0, 0, c.width, c.height)
   ctx.fillStyle = '#141414'
-  ctx.font = 'bold 30px Georgia, serif'
+  ctx.font = 'bold 36px Georgia, serif'
   ctx.fillText('INVOICE #2041', 40, 60)
-  ctx.font = '22px Georgia, serif'
+  ctx.font = '28px Georgia, serif'
   ctx.fillText('Date: 2026-08-28', 40, 105)
   ctx.fillText('Client: Acme Corporation', 40, 140)
-  ctx.fillText('Hosting — 12 months', 60, 200)
+  ctx.fillText('Hosting 12 months', 60, 200)
   ctx.fillText('Support retainer', 60, 235)
-  ctx.font = 'bold 24px Georgia, serif'
+  ctx.font = 'bold 30px Georgia, serif'
   ctx.fillText('Total: $42.50', 380, 330)
   return c
 }
