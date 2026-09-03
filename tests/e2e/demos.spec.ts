@@ -53,8 +53,9 @@ test('ocr reads the invoice line by line with confidence', async ({ page }) => {
   const d = demo(page, 'ocr')
   await d.go()
   await statusBecomes(page, 'line(s) read', 240_000)
-  await expect(page.locator('#lines')).toContainText('INVOICE #2041')
-  await expect(page.locator('#lines')).toContainText('Total: $42.50')
+  // tolerant of platform font rendering: ubuntu headless drops the space in "INVOICE #2041"
+  await expect(page.locator('#lines')).toContainText(/INVOICE\s*#\s*2041/)
+  await expect(page.locator('#lines')).toContainText(/Total:\s*\$42\.50/)
   await expect(page.locator('#lines')).toContainText(/9\d%/)
   expect(d.errors, d.errors.join('\n')).toEqual([])
 })
