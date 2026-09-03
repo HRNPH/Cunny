@@ -10,10 +10,13 @@
     "test": "pnpm -r --filter './packages/*' test",
     "docs:gen": "typedoc && node scripts/post-typedoc.mjs",
     "docs:build": "pnpm docs:gen && pnpm --filter website exec vitepress build",
-    "docs:dev": "pnpm docs:gen && pnpm --filter website exec vitepress dev"
+    "docs:dev": "pnpm docs:gen && pnpm --filter website exec vitepress dev",
+    "e2e": "playwright test",
+    "e2e:heavy": "E2E_HEAVY=1 playwright test"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
+    "@playwright/test": "^1.62.1",
     "happy-dom": "^17.6.3",
     "typedoc": "^0.28.20",
     "typedoc-plugin-markdown": "^4.13.0",

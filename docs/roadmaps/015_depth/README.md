@@ -59,3 +59,7 @@ subjectBox // { x, y, width, height } of nearest subject, pairs with bg-effects/
 ## Verification
 
 2026-09-03, manual pass by the maintainer in a desktop browser: depth-anything-v2-small q8 (27MB) produced the heatmap and subject box. Same embedded-webview compile limitation as clip; the demo tries webgpu first and falls back to wasm.
+
+## WebGPU requirement
+
+Same finding as clip: the 27MB depth-anything conv compiles in practical time only on WebGPU; wasm is minutes-scale. The demo tries webgpu first and falls back to wasm. Headless e2e gates on adapter presence.

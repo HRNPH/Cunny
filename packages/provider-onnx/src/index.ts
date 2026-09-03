@@ -44,8 +44,13 @@ export async function createSession(
   const ort = await getOrt()
   const backend = opts.backend ?? 'auto'
 
+  // ORT's wasm factory throws "multiple calls to initWasm()" when a second
+  // create overlaps a still-pending first one, so every create is serialized
+  // through one chain.
   const create = (providers: string[]) =>
-    ort.InferenceSession.create(new Uint8Array(bytes), { executionProviders: providers as never })
+    serialized(() =>
+      ort.InferenceSession.create(new Uint8Array(bytes), { executionProviders: providers as never }),
+    )
 
   if (backend === 'wasm') return create(['wasm'])
 
@@ -57,18 +62,31 @@ export async function createSession(
     return create([backend === 'webgpu' ? 'webgpu' : 'wasm'])
   }
 
-  // auto: some embedders expose navigator.gpu but never produce an adapter,
-  // and session creation then hangs instead of rejecting. Race it.
+  // auto: probe the adapter first. Some embedders expose navigator.gpu but
+  // never produce an adapter, and a session create against a dead adapter
+  // hangs instead of rejecting; falling back only after a rejection would
+  // then stack a second create on the pending one and trip initWasm().
+  const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu
+  const adapterReady = await Promise.race([
+    Promise.resolve(gpu!.requestAdapter())
+      .then((a: unknown) => !!a)
+      .catch(() => false),
+    new Promise<boolean>((r) => setTimeout(() => r(false), 1500)),
+  ])
+  if (!adapterReady) return create(['wasm'])
+
   try {
-    return await Promise.race([
-      create(['webgpu']),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('@cunny-ai/provider-onnx: webgpu session creation timed out')), 4000),
-      ),
-    ])
+    return await create(['webgpu'])
   } catch {
     return create(['wasm'])
   }
+}
+
+let createChain: Promise<unknown> = Promise.resolve()
+function serialized<T>(fn: () => Promise<T>): Promise<T> {
+  const next = createChain.then(fn, fn)
+  createChain = next.catch(() => {})
+  return next
 }
 
 /** Convenience: run with ort Tensor construction available to callers. */

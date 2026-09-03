@@ -58,6 +58,10 @@ The full release standard is [docs/releases.md](docs/releases.md).
 - `happy-dom` is available when DOM APIs are required. Prefer fakes.
 - A test that needs the network is a bug in the test.
 
+## Behavioral tests
+
+`pnpm e2e` drives the playground in headless Chromium against the real models: every demo runs through `?autorun=run` and the suite asserts the facts each demo reports (detection counts, transcripts, OCR text, upscaled dimensions, stable track ids), failing on any uncaught page error. `pnpm e2e:heavy` adds the >80MB demos (kokoro, clip). clip and depth are gated on a WebGPU adapter, which headless Chromium lacks; they run wherever one exists. CI runs the light suite on push and PR, the heavy set weekly and on demand. A change to a demo's reported facts is a regression: either the code broke, or the status contract changed and the spec plus test change together.
+
 ## Known failure modes
 
 Each of these has shipped a bug at least once:

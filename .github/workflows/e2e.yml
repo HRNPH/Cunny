@@ -1,0 +1,48 @@
+name: e2e
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      heavy:
+        description: 'include the heavy (>80MB) demos'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 3 * * 1' # mondays 03:00 utc, heavy included
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install chromium --with-deps
+      - name: light suite
+        if: ${{ !(github.event.inputs.heavy == 'true' || github.event_name == 'schedule') }}
+        run: pnpm e2e
+      - name: heavy suite
+        if: ${{ github.event.inputs.heavy == 'true' || github.event_name == 'schedule' }}
+        run: pnpm e2e:heavy
+        env:
+          E2E_HEAVY: '1'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: test-results/
+          retention-days: 7

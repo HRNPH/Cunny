@@ -103,7 +103,7 @@ describe('createSession', () => {
   })
 
   it('uses webgpu alone when explicitly requested and available', async () => {
-    vi.stubGlobal('navigator', { gpu: {} })
+    vi.stubGlobal('navigator', { gpu: { requestAdapter: async () => ({}) } })
     const create = makeCreate()
     const { mod } = await loadProvider({ create })
     await mod.createSession(bytes(2), { backend: 'webgpu' })
@@ -125,7 +125,7 @@ describe('createSession', () => {
   })
 
   it('auto tries webgpu first when navigator.gpu exists', async () => {
-    vi.stubGlobal('navigator', { gpu: {} })
+    vi.stubGlobal('navigator', { gpu: { requestAdapter: async () => ({}) } })
     const create = makeCreate()
     const { mod } = await loadProvider({ create })
     await mod.createSession(bytes(2))
@@ -133,7 +133,7 @@ describe('createSession', () => {
   })
 
   it('auto falls back to wasm when the preferred providers fail', async () => {
-    vi.stubGlobal('navigator', { gpu: {} })
+    vi.stubGlobal('navigator', { gpu: { requestAdapter: async () => ({}) } })
     const session = fakeSession()
     const create = vi.fn(async (_data: Uint8Array, opts: { executionProviders: string[] }) => {
       if (opts.executionProviders.includes('webgpu')) throw new Error('webgpu unavailable')
@@ -150,7 +150,7 @@ describe('createSession', () => {
   })
 
   it('rethrows without fallback for explicit backends', async () => {
-    vi.stubGlobal('navigator', { gpu: {} })
+    vi.stubGlobal('navigator', { gpu: { requestAdapter: async () => ({}) } })
     const err = new Error('webgpu unavailable')
     const create = vi.fn(async () => {
       throw err

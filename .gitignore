@@ -6,3 +6,4 @@ dist/
 docs/api/
 website/.vitepress/cache/
 website/.vitepress/dist/
+test-results/

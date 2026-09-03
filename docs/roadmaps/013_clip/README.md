@@ -60,3 +60,7 @@ await search('sunset over water', photoBitmaps, { k: 10 })
 ## Verification
 
 2026-09-03, manual pass by the maintainer in a desktop browser: zero-shot classification ran against the full clip-vit-base-patch32 q8 pair (89MB first load). Automated smoke in the embedded webview was blocked by the large conv-model wasm compile; desktop browsers compile it fine.
+
+## WebGPU requirement
+
+The e2e behavioral run established a hard practical constraint: the 89MB conv pair compiles in practical time only on WebGPU. The wasm path is minutes-scale (it stalls headless Chromium and embedded webviews outright). Treated as WebGPU-required for v0.0.x; documented in the README table.

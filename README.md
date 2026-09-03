@@ -52,13 +52,13 @@ Published (v0.0.x):
 | `@cunny-ai/upscale` | 4× image upscale | real-esrgan fp32 | 67MB |
 | `@cunny-ai/track` | Multi object tracking | bytetrack | 0 |
 
-| `@cunny-ai/clip` | Image ↔ text classification | clip-vit-b/32 q8 | 90MB |
-| `@cunny-ai/depth` | Depth estimation | depth-anything-v2 q8 | 27MB |
+| `@cunny-ai/clip` | Image ↔ text classification | clip-vit-b/32 q8 | 90MB, WebGPU required |
+| `@cunny-ai/depth` | Depth estimation | depth-anything-v2 q8 | 27MB, WebGPU required |
 | `@cunny-ai/captions` | Live captions | silero + moonshine | 32MB |
 | `@cunny-ai/vector` | Vector store | pure TS | 0 |
 | `@cunny-ai/search` | Semantic search | embed + vector | 24MB |
 
-First load is the model download size. Weights are cached in the Cache API after the first call and are not downloaded again. `embed` and `similarity` share one model repository, so using both downloads it once.
+First load is the model download size. `clip` and `depth` require WebGPU: their convolution graphs compile in practical time only there, the wasm path is minutes-scale. Weights are cached in the Cache API after the first call and are not downloaded again. `embed` and `similarity` share one model repository, so using both downloads it once.
 
 ## API conventions
 
