@@ -8,7 +8,7 @@
     "dev": "pnpm --filter playground dev",
     "typecheck": "pnpm -r --filter './packages/*' exec tsc --noEmit",
     "test": "pnpm -r --filter './packages/*' test",
-    "docs:gen": "typedoc && node scripts/post-typedoc.mjs",
+    "docs:gen": "node scripts/gen-typedoc-entries.mjs && typedoc && node scripts/post-typedoc.mjs",
     "docs:build": "pnpm docs:gen && pnpm --filter website exec vitepress build",
     "docs:dev": "pnpm docs:gen && pnpm --filter website exec vitepress dev",
     "e2e": "playwright test",

@@ -1,8 +1,29 @@
 {
   "extends": "./tsconfig.base.json",
   "include": [
+    "packages/bg-remove/src",
+    "packages/captions/src",
+    "packages/clip/src",
     "packages/core/src",
+    "packages/denoise-audio/src",
+    "packages/depth/src",
+    "packages/detect/src",
+    "packages/embed/src",
+    "packages/face-detect/src",
+    "packages/face-mesh/src",
+    "packages/ocr/src",
+    "packages/pose/src",
     "packages/provider-mediapipe/src",
-    "packages/face-detect/src"
+    "packages/provider-onnx/src",
+    "packages/search/src",
+    "packages/segment/src",
+    "packages/similarity/src",
+    "packages/stt-live/src",
+    "packages/stt/src",
+    "packages/track/src",
+    "packages/tts/src",
+    "packages/upscale/src",
+    "packages/vad/src",
+    "packages/vector/src"
   ]
 }
