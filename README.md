@@ -47,11 +47,9 @@ Published (v0.0.x):
 | `@cunny-ai/core` | Registry, cache, engine | — | 2KB |
 | `@cunny-ai/provider-mediapipe` | MediaPipe runtime | — | runtime |
 | `@cunny-ai/provider-onnx` | onnxruntime-web runtime | — | runtime |
-
 | `@cunny-ai/tts` | Text to speech | kokoro-82M q8 | 85MB |
 | `@cunny-ai/upscale` | 4× image upscale | real-esrgan fp32 | 67MB |
 | `@cunny-ai/track` | Multi object tracking | bytetrack | 0 |
-
 | `@cunny-ai/clip` | Image ↔ text classification | clip-vit-b/32 q8 | 90MB, WebGPU required |
 | `@cunny-ai/depth` | Depth estimation | depth-anything-v2 q8 | 27MB, WebGPU required |
 | `@cunny-ai/captions` | Live captions | silero + moonshine | 32MB |
