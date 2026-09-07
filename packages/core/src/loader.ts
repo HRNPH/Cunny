@@ -1,3 +1,7 @@
+/**
+ * loader.ts: the Cache API download layer.
+ * Cache first, then network with in-flight dedupe and progress events.
+ */
 import type { ProgressInfo } from './types.js'
 
 const CACHE_NAME = 'cunny-ai-models-v1'
@@ -68,6 +72,7 @@ async function download(
   return out.buffer
 }
 
+/** Fetch model bytes: cache first, otherwise one shared network download. */
 export async function fetchModel(
   url: string,
   opts: { onProgress?: (info: ProgressInfo) => void; signal?: AbortSignal } = {},

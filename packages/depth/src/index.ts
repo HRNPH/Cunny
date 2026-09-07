@@ -1,6 +1,22 @@
 /**
- * @cunny-ai/depth — relative monocular depth (Depth Anything v2 small, ~25MB q8).
- * Convention (SDK-wide): map is normalized 0–1, 0 = farthest, 1 = nearest.
+ * @cunny-ai/depth — relative depth estimation for a single image.
+ *
+ * Runs depth-anything-v2-small (Depth Anything V2 family), q8 quantized to about
+ * 27MB. `depth(source)` returns a normalized map (0 farthest, 1 nearest) at
+ * input resolution, with `toHeatmap()` and `toGrayscale()` rendering it as
+ * ImageData and `subjectBox` bounding the nearest decile of pixels. Requires
+ * WebGPU, as with @cunny-ai/clip: inference is practical only there, and the
+ * wasm path is minutes-scale. The first call downloads the model with progress
+ * events, then it is cached.
+ *
+ * @example
+ * ```ts
+ * import { depth } from '@cunny-ai/depth'
+ *
+ * const result = await depth(image)
+ * ctx.putImageData(result.toHeatmap(), 0, 0)
+ * console.log(result.subjectBox)
+ * ```
  */
 import { listModels, resolveModel } from '@cunny-ai/core'
 
@@ -11,21 +27,30 @@ export type DepthSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCan
 export interface DepthResult {
   /** Normalized depth, 0 = farthest … 1 = nearest. Length = width × height. */
   map: Float32Array
+  /** Map width in pixels. */
   width: number
+  /** Map height in pixels. */
   height: number
+  /** Inference wall time in ms. */
   elapsedMs: number
   /** Bounding box of the nearest subject (top decile of depth), normalized [0,1]. */
   subjectBox: { x: number; y: number; width: number; height: number }
+  /** Render as grayscale ImageData. */
   toGrayscale(): ImageData
+  /** Render as turbo colormap ImageData. */
   toHeatmap(): ImageData
 }
 
 export interface DepthOptions {
+  /** Model id override; defaults to the task default. */
   model?: string
+  /** Compute backend. WebGPU is required for practical inference speed. */
   acceleration?: 'auto' | 'wasm' | 'webgpu'
+  /** Called with download progress during the first model load. */
   onProgress?: (info: { loaded: number; total: number; file?: string }) => void
 }
 
+/** Model ids available for this task. */
 export function models() {
   return listModels(TASK)
 }

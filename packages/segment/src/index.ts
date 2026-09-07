@@ -1,6 +1,22 @@
 /**
- * @cunny-ai/segment — semantic segmentation via MediaPipe ImageSegmenter + DeepLab v3 (21 VOC classes, ~3MB).
- * Shares the mediapipe wasm with every other vision task — near-zero marginal download.
+ * @cunny-ai/segment — label every pixel of an image with a semantic class.
+ *
+ * `segment(source)` returns `coverage`, the fraction of pixels per class name
+ * (e.g. `{ person: 0.53 }`), and `colored`, a palette-colored `ImageData` at
+ * input resolution ready for canvas compositing; `VOC_CLASSES` lists the 21
+ * class names. The model is deeplab-v3 (3MB, Apache-2.0) over the 21 VOC
+ * classes, running on wasm via @cunny-ai/provider-mediapipe with GPU
+ * acceleration optional. It downloads on the first call with progress events,
+ * then stays cached in the Cache API.
+ *
+ * @example
+ * ```ts
+ * import { segment } from '@cunny-ai/segment'
+ *
+ * const { coverage, colored } = await segment(photo)
+ * coverage.person                 // 0.53 of all pixels
+ * ctx.putImageData(colored, 0, 0) // colorized overlay at input resolution
+ * ```
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createImageSegmenter } from '@cunny-ai/provider-mediapipe'
@@ -22,6 +38,7 @@ export const VOC_PALETTE: Array<[number, number, number]> = [
   [64, 128, 128], [192, 128, 128], [0, 64, 0], [128, 64, 0], [0, 192, 0], [128, 192, 0], [0, 64, 128],
 ]
 
+/** Anything decodable into an ImageBitmap: file, blob, bitmap, `<img>`, canvas, or URL. */
 export type SegmentSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCanvasElement | string
 
 export interface SegmentResult {
@@ -31,17 +48,24 @@ export interface SegmentResult {
   colored: ImageData
   /** Fraction of pixels per class (keyed by class name). */
   coverage: Record<string, number>
+  /** Output width in px (matches the input). */
   width: number
+  /** Output height in px (matches the input). */
   height: number
+  /** Inference time (ms), excluding model download/init. */
   elapsedMs: number
 }
 
 export interface SegmentOptions {
+  /** Model id or tier alias. Default = curated default. See models(). */
   model?: string
+  /** Compute delegate; 'auto' prefers GPU and falls back to wasm. */
   acceleration?: 'auto' | 'cpu' | 'gpu'
+  /** Download progress for the first model load. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
+/** Available models for this task: id, tier, sizeMB. */
 export function models() {
   return listModels(TASK)
 }

@@ -1,3 +1,7 @@
+/**
+ * types.ts: shared types for the registry, the load/engine surfaces,
+ * and the provider adapter seam.
+ */
 import type { CunnyAIError, DownloadError, ModelNotFoundError, ProviderMissingError } from './errors.js'
 
 export type { CunnyAIError, DownloadError, ModelNotFoundError, ProviderMissingError }
@@ -83,9 +87,11 @@ export interface EngineReport {
   cacheBackend: 'cache-api' | 'none'
 }
 
+/** Loads models for tasks and reports what was loaded. */
 export interface Engine {
   /** Download (or pull from cache) a model by task id. Concurrent calls for the same URL share one download. */
   loadModel(taskId: string, opts?: LoadOptions): Promise<LoadedModel>
+  /** List models loaded through this engine and the cache backend in use. */
   report(): EngineReport
 }
 

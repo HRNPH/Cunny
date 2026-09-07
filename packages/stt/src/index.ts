@@ -1,6 +1,20 @@
 /**
- * @cunny-ai/stt — local speech-to-text via Moonshine tiny (27M, ~30MB q8).
- * Accepts audio Files/Blobs/URLs or raw Float32Array PCM; decodes + resamples to 16k mono internally.
+ * @cunny-ai/stt — speech to text for English audio.
+ *
+ * Transcribes with moonshine-tiny (Moonshine family), q8 quantized to about 30MB,
+ * MIT licensed. `transcribe(source)` accepts audio files, URLs, or raw
+ * Float32Array PCM; it decodes and resamples to 16k mono internally and returns
+ * `{ text, durationMs, elapsedMs }`. Runs locally via transformers.js on wasm,
+ * with webgpu available through the acceleration option; the first call
+ * downloads the model with progress events, then it is cached.
+ *
+ * @example
+ * ```ts
+ * import { transcribe } from '@cunny-ai/stt'
+ *
+ * const result = await transcribe('/audio/meeting.webm')
+ * console.log(result.text, result.durationMs, result.elapsedMs)
+ * ```
  */
 import { listModels, resolveModel } from '@cunny-ai/core'
 
@@ -9,20 +23,26 @@ const TASK = 'stt'
 export type SttSource = Blob | File | string | Float32Array
 
 export interface TranscribeResult {
+  /** Recognized text. */
   text: string
   /** Input audio duration in ms. */
   durationMs: number
   /** Inference wall time in ms. */
   elapsedMs: number
+  /** Per chunk text and timestamps, when the model emits them. */
   chunks?: Array<{ text: string; timestamp: [number, number] }>
 }
 
 export interface SttOptions {
+  /** Model id override; defaults to the task default. */
   model?: string
+  /** Compute backend: 'wasm' (default) or 'webgpu'. */
   acceleration?: 'auto' | 'wasm' | 'webgpu'
+  /** Called with download progress during the first model load. */
   onProgress?: (info: { loaded: number; total: number; file?: string }) => void
 }
 
+/** Model ids available for this task. */
 export function models() {
   return listModels(TASK)
 }

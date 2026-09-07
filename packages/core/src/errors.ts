@@ -6,12 +6,14 @@ export class CunnyAIError extends Error {
   }
 }
 
+/** Thrown when a task has no model matching the id or tier alias. */
 export class ModelNotFoundError extends CunnyAIError {
   constructor(taskId: string, model: string) {
     super(`task "${taskId}" has no model "${model}". See models() for options.`, 'MODEL_NOT_FOUND')
   }
 }
 
+/** Thrown when a model's provider package is not installed. */
 export class ProviderMissingError extends CunnyAIError {
   constructor(pkg: string) {
     super(
@@ -21,6 +23,7 @@ export class ProviderMissingError extends CunnyAIError {
   }
 }
 
+/** Thrown when a model download fails. */
 export class DownloadError extends CunnyAIError {
   constructor(url: string, status: number) {
     super(`model download failed (${status}) ${url}`, 'DOWNLOAD_FAILED')

@@ -1,5 +1,24 @@
 /**
- * @cunny-ai/face-mesh — 478-point face landmarks + blendshapes + head transform (MediaPipe, ~3MB).
+ * @cunny-ai/face-mesh — extract dense face geometry from an image.
+ *
+ * `faceMesh(source)` returns, per face, 478 normalized landmarks plus 52
+ * blendshape scores in [0,1] and an optional 4x4 head transform matrix;
+ * `trackFaces(video, cb, opts)` is the realtime variant over a `<video>`
+ * element. The model is the MediaPipe face landmarker (~3MB), which runs on
+ * wasm via @cunny-ai/provider-mediapipe with GPU acceleration optional. It
+ * downloads on the first call with progress events, then stays cached in the
+ * Cache API.
+ *
+ * @example
+ * ```ts
+ * import { faceMesh } from '@cunny-ai/face-mesh'
+ *
+ * const { faces, elapsedMs } = await faceMesh(portrait, { maxFaces: 2 })
+ * const mesh = faces[0]
+ * mesh.landmarks[1]                   // { x, y, z } normalized [0,1]
+ * mesh.blendshapes['mouthSmileLeft']  // 0.73
+ * mesh.transform                      // 4x4 matrix (Float32Array) or null
+ * ```
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createFaceLandmarker } from '@cunny-ai/provider-mediapipe'
@@ -7,6 +26,7 @@ import type { FaceLandmarker as MpFaceLandmarker } from '@cunny-ai/provider-medi
 
 const TASK = 'face-mesh'
 
+/** Anything decodable into an ImageBitmap: file, blob, bitmap, `<img>`, canvas, or URL. */
 export type MeshSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCanvasElement | string
 
 export interface Landmark { x: number; y: number; z: number }
@@ -21,16 +41,22 @@ export interface FaceMesh {
 }
 
 export interface FaceMeshOptions {
+  /** Model id or tier alias. Default = curated default. See models(). */
   model?: string
+  /** Max faces returned. Default 1. */
   maxFaces?: number
+  /** Compute delegate; 'auto' prefers GPU and falls back to wasm. */
   acceleration?: 'auto' | 'cpu' | 'gpu'
+  /** Download progress for the first model load. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
 export interface TrackMeshOptions extends FaceMeshOptions {
+  /** Target callback rate. Default 24. */
   fps?: number
 }
 
+/** Available models for this task: id, tier, sizeMB. */
 export function models() {
   return listModels(TASK)
 }

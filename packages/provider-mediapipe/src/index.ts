@@ -1,8 +1,20 @@
 /**
- * @cunny-ai/provider-mediapipe — the mediapipe runtime boundary (architecture.md Rule 4).
- * Owns: tasks-vision version pin, wasm base resolution, GPU→CPU fallback, session creation.
- * Task packages call these factories and never import @mediapipe/tasks-vision themselves —
- * including for types: re-exported below.
+ * @cunny-ai/provider-mediapipe — the MediaPipe runtime boundary.
+ *
+ * The one place that touches @mediapipe/tasks-vision, pinned at 1.0.1: wasm is
+ * fetched from jsdelivr by default, and setWasmBase() points it at a self
+ * hosted copy. Factories: createFaceDetector, createFaceLandmarker,
+ * createPoseLandmarker, createImageSegmenter, createObjectDetector. Acceleration
+ * 'auto' retries cpu after a gpu throw, and an omitted acceleration is auto.
+ * MediaPipe type re-exports live here so task packages never pin the runtime.
+ *
+ * @example
+ * ```ts
+ * import { createFaceDetector, setWasmBase } from '@cunny-ai/provider-mediapipe'
+ *
+ * setWasmBase('/static/mediapipe/wasm') // optional: self host the wasm files
+ * const detector = await createFaceDetector(modelBytes, { acceleration: 'auto' })
+ * ```
  */
 export type {
   FaceDetector, FaceLandmarker, ImageSegmenter, ObjectDetector, PoseLandmarker,
@@ -46,9 +58,11 @@ async function loadRuntimes() {
   return { mp, fileset: await filesetPromise }
 }
 
+/** Session knobs shared by every factory in this package. */
 export interface SessionOptions {
   /** 'auto' tries GPU (WebGL) then falls back to CPU/wasm. Default 'auto'. */
   acceleration?: 'auto' | 'cpu' | 'gpu'
+  /** 'IMAGE' for stills, 'VIDEO' for per-frame calls. Default 'IMAGE'. */
   runningMode?: 'IMAGE' | 'VIDEO'
 }
 
@@ -65,6 +79,7 @@ async function withFallback<T>(
   }
 }
 
+/** Create a MediaPipe FaceDetector from tflite model bytes. */
 export async function createFaceDetector(
   model: Uint8Array,
   opts: SessionOptions & { confidence?: number; suppression?: number } = {},
@@ -79,6 +94,7 @@ export async function createFaceDetector(
     }))
 }
 
+/** Create a MediaPipe FaceLandmarker (mesh, blendshapes) from model bytes. */
 export async function createFaceLandmarker(
   model: Uint8Array,
   opts: SessionOptions & { numFaces?: number; blendshapes?: boolean; transformationMatrices?: boolean } = {},
@@ -94,6 +110,7 @@ export async function createFaceLandmarker(
     }))
 }
 
+/** Create a MediaPipe PoseLandmarker from model bytes. */
 export async function createPoseLandmarker(
   model: Uint8Array,
   opts: SessionOptions & { numPoses?: number } = {},
@@ -107,6 +124,7 @@ export async function createPoseLandmarker(
     }))
 }
 
+/** Create a MediaPipe ImageSegmenter from model bytes. */
 export async function createImageSegmenter(
   model: Uint8Array,
   opts: SessionOptions & { outputCategoryMask?: boolean; outputConfidenceMasks?: boolean } = {},
@@ -121,6 +139,7 @@ export async function createImageSegmenter(
     }))
 }
 
+/** Create a MediaPipe ObjectDetector from model bytes. */
 export async function createObjectDetector(
   model: Uint8Array,
   opts: SessionOptions & { confidence?: number; maxResults?: number } = {},

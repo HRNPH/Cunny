@@ -1,18 +1,24 @@
 /**
- * @cunny-ai/core — model registry, cached lazy loading, engine lifecycle.
+ * @cunny-ai/core — the only shared dependency of every task package.
  *
- * Every task package builds on this; application code rarely touches it
- * directly. The two things you might use it for:
+ * It holds the model registry (task to models to variants, with
+ * fast/balanced/quality tier aliases), the Cache API download layer with dedupe
+ * and progress events, and the engine: createEngine/getDefaultEngine, loadModel
+ * with model/variant/onProgress, and report(). The package is ~2KB of code and
+ * zero model bytes; resolveModel and listModels are also exported. setWasmBase
+ * on providers pairs with createEngine({ modelBase }) for self hosting.
  *
  * @example
  * ```ts
- * // 1. See what a task offers before downloading anything
- * import { listModels } from '@cunny-ai/core'
- * listModels('face-detect') // [{ id: 'blazeface-short', tier: 'default', sizeMB: 0.5, ... }]
+ * import { createEngine, listModels } from '@cunny-ai/core'
  *
- * // 2. Self-host all weights behind your own CDN
- * import { createEngine } from '@cunny-ai/core'
+ * listModels('face-detect') // see what a task offers before downloading anything
  * const engine = createEngine({ modelBase: 'https://my-cdn.example.com/models' })
+ * const model = await engine.loadModel('face-detect', {
+ *   model: 'balanced', // tier alias, an exact model id, or omit for default
+ *   onProgress: ({ loaded, total }) => setBar(loaded / total),
+ * })
+ * engine.report() // { models: [...], cacheBackend: 'cache-api' }
  * ```
  */
 export { CunnyAIError, DownloadError, ModelNotFoundError, ProviderMissingError } from './errors.js'

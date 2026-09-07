@@ -1,16 +1,31 @@
 /**
- * @cunny-ai/search — the consumer face of edge RAG: index(myStuff) → search('…').
- * L4 combo package (architecture.md): orchestration only, zero ML code.
+ * @cunny-ai/search — semantic search over your own text.
+ *
+ * A combo package over embed and vector, with orchestration only. chunkText(text)
+ * splits input on paragraphs and sentences with size bounds; index(texts) embeds
+ * the chunks and stores them; search(query, k) returns the nearest chunks with
+ * scores.
+ *
+ * @example
+ * ```ts
+ * import { createSearch } from '@cunny-ai/search'
+ *
+ * const search = createSearch()
+ * await search.index(['full text of doc one', 'full text of doc two'])
+ * const hits = await search.search('payment terms', { k: 5 })
+ * ```
  */
 import { embed } from '@cunny-ai/embed'
 import { createVectorStore } from '@cunny-ai/vector'
 
+/** One document to index: text plus optional id and meta. */
 export interface SearchItem {
   id?: string
   text: string
   meta?: unknown
 }
 
+/** One query result: the document id, its score, and a readable snippet. */
 export interface SearchHit {
   id: string
   score: number
@@ -19,10 +34,13 @@ export interface SearchHit {
   meta?: unknown
 }
 
+/** Chunking bounds and download progress reporting for `createSearch`. */
 export interface SearchOptions {
   /** Chunk size in characters (bge 512-token context ≈ 1500 chars; we stay conservative). */
   chunkChars?: number
+  /** Characters shared between adjacent chunks. Default 150. */
   overlapChars?: number
+  /** Fires while the embedding model downloads. */
   onProgress?: (info: { loaded: number; total: number; file?: string }) => void
 }
 
@@ -48,14 +66,21 @@ export function chunkText(text: string, opts: { chunkChars?: number; overlapChar
   return chunks
 }
 
+/** Search handle returned by `createSearch`. */
 export interface SearchIndex {
+  /** Chunk and embed documents (strings, Files, or items); returns the chunk count. */
   index(items: Array<SearchItem | File | Blob | string>): Promise<number>
+  /** Embed the query and return the nearest documents with scores. */
   search(query: string, opts?: { k?: number }): Promise<SearchHit[]>
+  /** Number of stored chunks. */
   size(): number
+  /** Drop the index. */
   clear(): void
 }
 
 /**
+ * Create a search index: chunk, embed, and store up front, query later.
+ *
  * ```ts
  * const search = createSearch()
  * await search.index(noteFiles)

@@ -1,7 +1,25 @@
 /**
- * @cunny-ai/detect — object detection, 80 COCO classes.
- * Default model: efficientdet-lite0 int8 (Apache-2.0, ~4.4MB) via the shared mediapipe runtime.
- * YOLOX-n (Apache-2.0) lands as the quality tier via provider-onnx — same API, `model:` option.
+ * @cunny-ai/detect — find objects in an image and label them with 80 COCO classes.
+ *
+ * `detect(source, { confidence, classes, maxResults })` returns detections
+ * with `label`, `score`, a pixel `box`, and the same box `normalized` to [0,1];
+ * `trackObjects(video, cb, { fps })` is the realtime variant over a `<video>`
+ * element. The default model is efficientdet-lite0 int8 (4.4MB, Apache-2.0,
+ * 80 COCO classes) running on wasm via @cunny-ai/provider-mediapipe with GPU
+ * optional; the cpu delegate is the default because on some GPU setups the
+ * efficientdet GPU delegate runs but returns zero detections, so acceleration
+ * 'auto' is opt in. The model downloads on the first call with progress
+ * events, then stays cached in the Cache API.
+ *
+ * @example
+ * ```ts
+ * import { detect } from '@cunny-ai/detect'
+ *
+ * const { detections } = await detect(photo, { classes: ['person'], confidence: 0.4 })
+ * detections[0].label      // 'person'
+ * detections[0].score      // 0.87
+ * detections[0].normalized // same box in [0,1]
+ * ```
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createObjectDetector } from '@cunny-ai/provider-mediapipe'
@@ -9,10 +27,13 @@ import type { ObjectDetector as MpObjectDetector } from '@cunny-ai/provider-medi
 
 const TASK = 'detect'
 
+/** Anything decodable into an ImageBitmap: file, blob, bitmap, `<img>`, canvas, or URL. */
 export type DetectSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCanvasElement | string
 
 export interface Detection {
+  /** COCO class name, e.g. 'person'. */
   label: string
+  /** Confidence in [0,1]. */
   score: number
   /** Pixel box in the input image's coordinate space, origin top-left. */
   box: { x: number; y: number; width: number; height: number }
@@ -21,15 +42,22 @@ export interface Detection {
 }
 
 export interface DetectResult {
+  /** Detections that passed the confidence threshold. */
   detections: Detection[]
+  /** Input dimensions the pixel boxes refer to. */
   width: number
+  /** Input dimensions the pixel boxes refer to. */
   height: number
+  /** Inference time (ms), excluding model download/init. */
   elapsedMs: number
 }
 
 export interface DetectOptions {
+  /** Model id or tier alias. Default = curated default. See models(). */
   model?: string
+  /** Minimum confidence to keep a detection. */
   confidence?: number
+  /** Max detections returned. */
   maxResults?: number
   /** Restrict to classes, e.g. ['person', 'car']. */
   classes?: string[]
@@ -38,9 +66,11 @@ export interface DetectOptions {
    * without error but returns zero detections, so 'auto' is opt-in here.
    */
   acceleration?: 'auto' | 'cpu' | 'gpu'
+  /** Download progress for the first model load. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
+/** Available models for this task: id, tier, sizeMB. */
 export function models() {
   return listModels(TASK)
 }

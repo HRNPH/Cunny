@@ -1,6 +1,21 @@
 /**
- * @cunny-ai/clip — zero-shot classification + text↔image search via CLIP ViT-B/32 (quantized).
- * Dual-encoder: `embedText` and `embedImage` land in the same shared space.
+ * @cunny-ai/clip — zero shot image classification and text/image search.
+ *
+ * Runs clip-vit-base-patch32 (CLIP ViT-B/32), q8 quantized to about 90MB, MIT
+ * licensed. `classify(image, labels)` scores caller provided labels with a
+ * softmax over label similarities in CLIP's shared embedding space;
+ * `embedText()`, `embedImage()`, and `search()` expose that space directly.
+ * Requires WebGPU: the convolution pair compiles in practical time only there,
+ * and the wasm path is minutes-scale. The first call downloads the model with
+ * progress events, then it is cached.
+ *
+ * @example
+ * ```ts
+ * import { classify } from '@cunny-ai/clip'
+ *
+ * const scores = await classify(image, ['a receipt', 'a meme', 'a selfie'])
+ * console.log(scores[0].label, scores[0].score)
+ * ```
  */
 import { listModels, resolveModel } from '@cunny-ai/core'
 
@@ -9,16 +24,22 @@ const TASK = 'clip'
 export type ImageSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCanvasElement | string
 
 export interface ClipOptions {
+  /** Model id override; defaults to the task default. */
   model?: string
+  /** Compute backend. WebGPU is required for practical inference speed. */
   acceleration?: 'auto' | 'wasm' | 'webgpu'
+  /** Called with download progress during the first model load. */
   onProgress?: (info: { loaded: number; total: number; file?: string }) => void
 }
 
 export interface Classification {
+  /** Label text passed in by the caller. */
   label: string
+  /** Softmax probability in [0,1]. */
   score: number
 }
 
+/** Model ids available for this task. */
 export function models() {
   return listModels(TASK)
 }
@@ -96,6 +117,8 @@ export async function embedImage(source: ImageSource, opts: ClipOptions = {}): P
 
 /**
  * Zero-shot classify an image against caller-provided labels.
+ * Each label is wrapped in `promptTemplate` (default `'a photo of {}'`) and the
+ * results are softmax scores sorted best first.
  * ```ts
  * await classify(photo, ['a receipt', 'a meme', 'a selfie'])
  * ```
@@ -123,7 +146,7 @@ export async function classify(
     .sort((a, b) => b.score - a.score)
 }
 
-/** Search images by text (or by another image). Returns indices ranked by similarity. */
+/** Search images by text (or by another image). Returns up to `k` (default 5) indices ranked by similarity. */
 export async function search(
   query: string | ImageSource,
   images: ImageSource[],

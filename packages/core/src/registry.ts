@@ -1,13 +1,13 @@
+/**
+ * registry.ts: the model registry, task to models to variants.
+ * One source of truth for model choice, `models()` metadata, docs and CI size gates.
+ */
 import { ModelNotFoundError } from './errors.js'
 import type { ModelEntry, ModelInfo, TaskEntry, Tier } from './types.js'
 
 const MP = 'https://storage.googleapis.com/mediapipe-models'
 
-/**
- * Registry v2 — task → models → variants (architecture.md Rule 3).
- * One source of truth for model choice, `models()` metadata, docs and CI size gates.
- * License policy: defaults must be Apache-2.0 / MIT / CC-BY.
- */
+/** The registry table (architecture.md Rule 3). License policy: defaults must be Apache-2.0 / MIT / CC-BY. */
 export const TASKS: Record<string, TaskEntry> = {
   'face-detect': {
     defaultModel: 'blazeface-short',
@@ -242,6 +242,7 @@ export const TASKS: Record<string, TaskEntry> = {
   },
 }
 
+/** Resolve a task's model by exact id or tier alias; omitted/'default' picks the task default. */
 export function resolveModel(taskId: string, model?: string): { modelId: string; entry: ModelEntry } {
   const task = TASKS[taskId]
   if (!task) {

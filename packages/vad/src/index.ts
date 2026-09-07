@@ -1,7 +1,27 @@
 /**
- * @cunny-ai/vad — Silero VAD v5 (~2MB ONNX) via the shared provider-onnx runtime.
- * Frame protocol (silero-v5): 512-sample frames @16k + 64 samples of trailing context,
- * state tensor (2,1,128), context state reset every ~30s to avoid LSTM drift.
+ * @cunny-ai/vad — voice activity detection over streaming 16 kHz audio.
+ *
+ * Runs silero-v5 (2.3MB, MIT) in the browser through @cunny-ai/provider-onnx;
+ * the weights download on first use. `createVAD` accepts the handlers
+ * `onSpeechStart`, `onSegment` (the complete utterance as 16k PCM, ready for
+ * @cunny-ai/stt), `onSpeechEnd`, and `onProbability`, and returns a session
+ * with `push(Float32Array)` taking any chunk size, `flush()` which awaits the
+ * drain and emits the final segment, and `close()`. Inference runs over 512
+ * sample frames at 16 kHz plus 64 samples of context, carried in a (2,1,128)
+ * state tensor. For a mic `MediaStream`, `startVAD` wires capture through an
+ * AudioWorklet.
+ *
+ * @example
+ * ```ts
+ * import { createVAD } from '@cunny-ai/vad'
+ *
+ * const vad = await createVAD({
+ *   onSegment: (audio, durationMs) => console.log('segment', audio.length, durationMs),
+ * })
+ * vad.push(pcmChunk) // any chunk size, 16k mono
+ * await vad.flush()
+ * vad.close()
+ * ```
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createSession, getOrt } from '@cunny-ai/provider-onnx'
@@ -12,6 +32,7 @@ const FRAME = 512
 const CONTEXT = 64
 const RESET_EVERY_MS = 30_000
 
+/** Tuning and model loading options for `createVAD`. */
 export interface VadOptions {
   /** Speech probability threshold. Default 0.5. */
   threshold?: number
@@ -19,31 +40,43 @@ export interface VadOptions {
   startHangover?: number
   /** Ms of silence before speechEnd fires. Default 250. */
   endHangover?: number
+  /** Specific model variant to load. */
   model?: string
+  /** Model download progress. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
+/** Speech boundary callbacks, passed alongside `VadOptions`. */
 export interface VadEventHandlers {
+  /** Fires once ongoing speech is confirmed. */
   onSpeechStart?: () => void
   /** Complete speech clip (16k mono PCM) when speech ends. Ready to feed @cunny-ai/stt. */
   onSegment?: (audio: Float32Array, durationMs: number) => void
+  /** Fires when trailing silence confirms the utterance end. */
   onSpeechEnd?: (durationMs: number) => void
-  /** Per-frame speech probability — for live meters. */
+  /** Per-frame speech probability, for live meters. */
   onProbability?: (p: number) => void
 }
 
+/** A streaming VAD session over 16k mono PCM. */
 export interface VadSession {
   /** Feed 16k mono PCM incrementally (any chunk size; framed internally). */
   push(audio: Float32Array): void
   /** Flush the pending tail as a final segment (call at stream end). */
   flush(): Promise<void>
+  /** Release the underlying ONNX session. */
   close(): void
 }
 
+/** Model variants registered for this task. */
 export function models() {
   return listModels(TASK)
 }
 
+/**
+ * Create a streaming VAD session. Feed 16k mono PCM via `push`; complete
+ * utterances arrive through `onSegment`.
+ */
 export async function createVAD(opts: VadOptions & VadEventHandlers = {}): Promise<VadSession> {
   const threshold = opts.threshold ?? 0.5
   const startHang = opts.startHangover ?? 30
@@ -183,7 +216,7 @@ export async function createVAD(opts: VadOptions & VadEventHandlers = {}): Promi
 
 /**
  * Run VAD over a live MediaStream (mic). AudioWorklet captures 16k frames;
- * inference runs on the main thread (2MB model, ~0.1ms/frame — worker lands with core v1).
+ * inference runs on the main thread (2MB model, ~0.1ms/frame, worker lands with core v1).
  */
 export async function startVAD(stream: MediaStream, handlers: VadEventHandlers, opts: VadOptions = {}): Promise<{ stop: () => void }> {
   const session = await createVAD({ ...opts, ...handlers })

@@ -1,11 +1,22 @@
 /**
- * @cunny-ai/similarity — calibrated text similarity over the same bge-small repo as @cunny-ai/embed.
- * Same HF URLs → same browser cache → zero additional model download when embed is (or was) used.
+ * @cunny-ai/similarity — calibrated semantic similarity between two texts.
  *
- * Calibration: measured on bge-small q8 in-browser, raw cosines land at
- * unrelated ≈ 0.43–0.50, related ≈ 0.6–0.7, paraphrase ≈ 0.74+.
- * We remap linearly: score = clamp((cos − 0.50) / 0.30) so 0.5 means "roughly
- * related" and 0.8+ means paraphrase-grade.
+ * Uses the same bge-small-en-v1.5 model as @cunny-ai/embed (q8, about 24MB, MIT,
+ * English), so the weights download once for both packages. Raw bge cosines
+ * cluster high, so `similarity(a, b)` remaps them through 0.50 to 0.80 into a
+ * calibrated score in [0,1]: measured values land at 0.43 to 0.50 for unrelated
+ * text, 0.6 to 0.7 for related text, and 0.74 and up for paraphrases.
+ * `isParaphrase()`, `pairwise()`, and `group()` build on that score. Runs locally
+ * via transformers.js on wasm, webgpu optional through the acceleration option;
+ * the first call downloads the model with progress events, then it is cached.
+ *
+ * @example
+ * ```ts
+ * import { similarity, isParaphrase } from '@cunny-ai/similarity'
+ *
+ * const score = await similarity('a cat on a mat', 'a feline on a rug')
+ * const same = await isParaphrase('send it now', 'ship it immediately')
+ * ```
  */
 import { listModels, resolveModel } from '@cunny-ai/core'
 
@@ -14,8 +25,11 @@ const CAL_LO = 0.50
 const CAL_HI = 0.80
 
 export interface SimilarityOptions {
+  /** Model id override; defaults to the task default. */
   model?: string
+  /** Compute backend: 'wasm' (default) or 'webgpu'. */
   acceleration?: 'auto' | 'wasm' | 'webgpu'
+  /** Called with download progress during the first model load. */
   onProgress?: (info: { loaded: number; total: number; file?: string }) => void
 }
 
@@ -94,6 +108,7 @@ export async function group(texts: string[], opts: SimilarityOptions & { thresho
   return [...clusters.values()]
 }
 
+/** Model ids available for this task. */
 export function models() {
   return listModels(TASK)
 }

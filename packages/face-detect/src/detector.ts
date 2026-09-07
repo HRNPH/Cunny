@@ -10,13 +10,19 @@ const TASK = 'face-detect'
 export interface CreateOptions extends DetectOptions {
   /** Progress while the model weights download (first time only). */
   onProgress?: (info: { loaded: number; total: number }) => void
+  /** IMAGE for stills (default), VIDEO for realtime. */
   runningMode?: 'IMAGE' | 'VIDEO'
 }
 
+/** Available models for this task: id, tier, sizeMB. */
 export function models() {
   return listModels(TASK)
 }
 
+/**
+ * Create a detector instance with an explicit lifecycle; the one-shot `detect`
+ * export uses a shared IMAGE-mode instance behind the scenes.
+ */
 export async function createFaceDetector(opts: CreateOptions = {}): Promise<FaceDetectorInstance> {
   const {
     confidence = 0.5, suppression = 0.3, maxFaces = 5,

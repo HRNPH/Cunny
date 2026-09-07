@@ -1,34 +1,62 @@
 /**
- * @cunny-ai/vector — local vector store. Memory backend by design (010 spec):
- * at 384 dims, a 50k brute-force scan costs <10ms with typed arrays. No HNSW until benchmarks say so.
- * Persistence: IndexedDB with structured clone (Float32Array stored natively).
+ * @cunny-ai/vector — a pure TypeScript vector store.
+ *
+ * No model and no dependencies. createVectorStore takes dims and returns a
+ * store with add, search, and remove; metrics are cosine, dot, or euclidean,
+ * and search returns the top-k hits. Persistence is optional IndexedDB under
+ * the 'cunny-ai-vector' database, written by persist() and read back by
+ * loadVectorStore().
+ *
+ * @example
+ * ```ts
+ * import { createVectorStore, loadVectorStore } from '@cunny-ai/vector'
+ *
+ * const store = createVectorStore({ dim: 384, metric: 'cosine' })
+ * store.add('doc-1', vector, { title: 'Notes' })
+ * const hits = store.search(queryVector, { k: 5 })
+ * await store.persist('my-index')
+ * ```
  */
 
+/** A vector of the dimensionality the store was created with. */
 export type Vector = Float32Array
 
+/** One search result: the stored id, its score, and the meta passed to `add()`. */
 export interface SearchHit<T = unknown> {
   id: string
   score: number
   meta?: T
 }
 
+/** Store handle returned by `createVectorStore`. */
 export interface VectorStore<T = unknown> {
+  /** Insert or replace a vector under `id`. */
   add(id: string, vector: Vector, meta?: T): void
+  /** Insert or replace many vectors at once. */
   addMany(items: Array<{ id: string; vector: Vector; meta?: T }>): void
+  /** Delete a vector; false when the id is unknown. */
   remove(id: string): boolean
+  /** Top-k nearest vectors, best score first; `filter` prunes by meta before ranking. */
   search(query: Vector, opts?: { k?: number; filter?: (meta: T, id: string) => boolean }): SearchHit<T>[]
+  /** Number of stored vectors. */
   size(): number
+  /** Remove all vectors. */
   clear(): void
+  /** Write the store to IndexedDB under `name`. */
   persist(name: string): Promise<void>
 }
 
+/** Options for `createVectorStore`. */
 export interface CreateStoreOptions {
+  /** Vector dimensionality; every add and search must match it. */
   dim: number
   /** 'memory' (default). 'sqlite' backend lands with OPFS work — interface is the contract. */
   backend?: 'memory'
+  /** Similarity metric for scores. Default 'cosine'. */
   metric?: 'cosine' | 'dot' | 'euclidean'
 }
 
+/** Create a vector store with add, top-k search, remove, and optional persistence. */
 export function createVectorStore<T = unknown>(opts: CreateStoreOptions): VectorStore<T> {
   if (opts.backend && opts.backend !== 'memory') {
     throw new Error(`@cunny-ai/vector: backend "${opts.backend}" not implemented yet (v0 ships memory only)`)

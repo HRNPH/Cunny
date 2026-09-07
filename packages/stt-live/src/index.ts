@@ -1,12 +1,23 @@
 /**
- * @cunny-ai/stt-live — streaming speech-to-text.
+ * @cunny-ai/stt-live — streaming speech to text in the browser.
  *
- * v1 ships the 018 spec's blessed fallback engine: VAD segmentation +
- * Moonshine re-decode. Partials re-transcribe the buffered speech roughly
- * twice a second while it is ongoing; finalized text lands per utterance
- * when the VAD end-hangover fires. The public contract is engine-agnostic
- * so the planned streaming-zipformer backend (sherpa-onnx wasm) slots in
- * without API changes.
+ * `createStreamSTT` returns a session with `feed(Float32Array)` for 16k mono
+ * PCM, `flush()`, and callbacks: `onPartial` fires roughly twice a second
+ * during ongoing speech, `onEndpoint` delivers the final text per utterance,
+ * and `onProbability` mirrors the live VAD probability. v1 is the spec's
+ * fallback engine, silero VAD segmentation plus moonshine re-decode, about
+ * 32MB total downloaded on first use. The streaming zipformer backend stays
+ * planned behind the same API.
+ *
+ * @example
+ * ```ts
+ * import { createStreamSTT, micFeed } from '@cunny-ai/stt-live'
+ *
+ * const stt = await createStreamSTT({ language: 'en' })
+ * stt.onPartial = (text) => (caption.textContent = text)
+ * stt.onEndpoint = (final) => log(final)
+ * const stop = await micFeed(stt)
+ * ```
  */
 import { createVAD } from '@cunny-ai/vad'
 import { transcribe } from '@cunny-ai/stt'
@@ -15,15 +26,19 @@ import { listModels } from '@cunny-ai/core'
 const TASK = 'stt-live'
 const PARTIAL_INTERVAL_MS = 600
 
+/** Options for `createStreamSTT`. */
 export interface StreamSttOptions {
   /** BCP-47-ish language tag. v1: 'en'. */
   language?: string
   /** VAD speech probability threshold. Default 0.5. */
   threshold?: number
+  /** Specific model variant to load. */
   model?: string
+  /** Model download progress. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
+/** A streaming transcription session over 16k mono PCM. */
 export interface StreamStt {
   /** Feed 16k mono PCM incrementally (any chunk size). */
   feed(audio: Float32Array): void
@@ -35,14 +50,20 @@ export interface StreamStt {
   onEndpoint: (text: string, durationMs: number) => void
   /** Live VAD probability, for meters. */
   onProbability?: (p: number) => void
+  /** Stop the session and release the VAD engine. */
   stop(): void
 }
 
+/** Model variants registered for this task. */
 export function models() {
   return listModels(TASK)
 }
 
 /**
+ * Create a streaming transcription session. Assign `onPartial` and
+ * `onEndpoint`, then feed 16k mono PCM.
+ *
+ * @example
  * ```ts
  * const stt = await createStreamSTT({ language: 'en' })
  * stt.onPartial = (t) => (caption.textContent = t)

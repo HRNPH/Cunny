@@ -1,7 +1,25 @@
 /**
- * @cunny-ai/tts — Kokoro-82M int8 via kokoro-js (private impl detail, builtin policy),
- * with a `native` tier routing to speechSynthesis (0MB, always available).
- * Sentence-chunked synthesis: the first sentence plays while later ones generate.
+ * @cunny-ai/tts — text to speech with English voices.
+ *
+ * Synthesizes speech with kokoro-82M (Kokoro family), q8 quantized to about
+ * 85MB, Apache-2.0 licensed, 24kHz output. `speak(text, { voice, speed, engine })`
+ * returns an Utterance with the audio as a Float32Array plus `play()`, `stop()`,
+ * and `toWav()`; synthesis is sentence chunked, so the first sentence can play
+ * while later ones still generate. `voices()` lists the kokoro voice ids, and
+ * `engine: 'native'` uses the OS speechSynthesis with zero download. The kokoro
+ * engine runs locally via transformers.js on wasm, webgpu available through the
+ * acceleration option; the first call downloads the model with progress events,
+ * then it is cached.
+ *
+ * @example
+ * ```ts
+ * import { speak } from '@cunny-ai/tts'
+ *
+ * const u = await speak('Hello from the browser.', { voice: 'af_heart' })
+ * await u.play()
+ *
+ * const quick = await speak('No download needed.', { engine: 'native' })
+ * ```
  */
 import { listModels, resolveModel } from '@cunny-ai/core'
 
@@ -10,30 +28,43 @@ const DEFAULT_VOICE = 'af_heart'
 const KOKORO_REPO = 'onnx-community/Kokoro-82M-ONNX'
 
 export interface VoiceInfo {
+  /** Kokoro voice id, e.g. 'af_heart'. */
   id: string
+  /** BCP-47 language tag, 'en-US' or 'en-GB'. */
   lang: string
+  /** 'female' or 'male'. */
   gender: string
 }
 
 export interface SpeakOptions {
   /** Kokoro voice id, e.g. 'af_heart' (en female). Default 'af_heart'. */
   voice?: string
+  /** Speaking rate multiplier, 1 = normal. */
   speed?: number
   /** 'auto' | 'kokoro' | 'native'. 'native' = OS voices, zero download. Default 'auto' → kokoro. */
   engine?: 'auto' | 'kokoro' | 'native'
+  /** Model id override for the kokoro engine. */
   model?: string
+  /** Compute backend for kokoro: 'wasm' (default) or 'webgpu'. */
   acceleration?: 'auto' | 'wasm' | 'webgpu'
+  /** Called with download progress during the first model load. */
   onProgress?: (info: { loaded: number; total: number; file?: string }) => void
 }
 
 export interface Utterance {
+  /** Audio samples at `sampleRate`; empty for the native engine. */
   audio: Float32Array
+  /** Sample rate of `audio` (24000 for kokoro, 0 for native). */
   sampleRate: number
+  /** Play the full utterance; resolves when playback ends. */
   play(): Promise<void>
+  /** Stop playback. */
   stop(): void
+  /** Encode `audio` as a WAV blob; empty for the native engine. */
   toWav(): Blob
 }
 
+/** Model ids available for this task. */
 export function models() {
   return listModels(TASK)
 }

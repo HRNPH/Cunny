@@ -1,3 +1,27 @@
+/**
+ * @cunny-ai/face-detect — find faces in an image and get their boxes and keypoints.
+ *
+ * `detect(source, opts?)` returns `{ faces, elapsedMs }`; each `Face` carries a
+ * `score`, a pixel `box`, the same box `normalized` to [0,1], and 5 `keypoints`
+ * (eyes, nose tip, mouth corners). The default model is blazeface-short
+ * (450KB, Apache-2.0) from the MediaPipe family, picked automatically;
+ * `models()` lists alternatives. Inference runs on wasm via
+ * @cunny-ai/provider-mediapipe with GPU acceleration optional, and the weights
+ * download on the first call with progress events, then stay cached in the
+ * Cache API. For realtime use, `trackFaces(video, cb, { fps })` runs over a
+ * `<video>` element.
+ *
+ * @example
+ * ```ts
+ * import { detect } from '@cunny-ai/face-detect'
+ *
+ * const { faces, elapsedMs } = await detect(photo, { confidence: 0.6 })
+ * const best = faces[0]
+ * best.score      // 0.92
+ * best.box        // pixel box { x, y, width, height }
+ * best.normalized // same box in [0,1]
+ * ```
+ */
 import { createFaceDetector, getDefaultDetector } from './detector.js'
 import type {
   DetectOptions, DetectResult, DetectSource, Face, FaceDetectorInstance,
@@ -8,6 +32,7 @@ export type {
   DetectOptions, DetectResult, DetectSource, Face, FaceDetectorInstance,
   TrackCallback, TrackOptions,
 } from './types.js'
+/** Advanced API: explicit detector instances and the model registry. */
 export { createFaceDetector, models } from './detector.js'
 
 /**

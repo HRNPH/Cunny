@@ -1,13 +1,23 @@
 /**
- * @cunny-ai/ocr — OCR via a pure ONNX pipeline: PaddleOCR v4 mobile.
- * Det (DBNet, ~4.7MB) finds text boxes, rec (CRNN/SVTR, ~10.8MB) reads them,
- * both through @cunny-ai/provider-onnx. No mediapipe, no transformers.js —
- * this package owns its pre/post processing: DB postprocess, CTC decode,
- * reading-order layout.
+ * @cunny-ai/ocr — text extraction from images in the browser.
  *
- * The ch_PP-OCRv4 rec model is Chinese-first but covers ASCII and digits,
- * so `en` requests it too; language-specific rec models land as their own
- * registry entries later.
+ * `ocr(source, { languages: ['en'], threshold })` returns lines carrying
+ * `text`, `box`, and `confidence`. The models are PaddleOCR v4 mobile
+ * (Apache-2.0): det (DBNet) at 4.7MB plus rec at 10.8MB plus the charset
+ * dict, about 16MB total, loaded through @cunny-ai/provider-onnx on first
+ * use. The package is a pure ONNX pipeline with its own DB postprocess and
+ * CTC decode. The Chinese-first rec model covers ASCII, and the cls stage is
+ * skipped in v1.
+ *
+ * @example
+ * ```ts
+ * import { ocr } from '@cunny-ai/ocr'
+ *
+ * const result = await ocr(file, { languages: ['en'], threshold: 0.3 })
+ * for (const line of result.lines) {
+ *   console.log(line.text, line.box, line.confidence)
+ * }
+ * ```
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createSession, getOrt, newTensor } from '@cunny-ai/provider-onnx'
@@ -21,32 +31,46 @@ const MIN_AREA = 8
 const REC_HEIGHT = 48
 const REC_MAX_WIDTH = 960
 
+/** Input types `ocr` accepts: blob, bitmap, image or canvas element, or a URL string. */
 export type OcrSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCanvasElement | string
 
+/** One recognized line of text. */
 export interface OcrLine {
+  /** Decoded text. */
   text: string
   /** Pixel box in the input image's coordinate space, origin top-left. */
   box: { x: number; y: number; width: number; height: number }
+  /** Mean recognition confidence, 0 to 1. */
   confidence: number
 }
 
+/** OCR output for one image. */
 export interface OcrResult {
+  /** Recognized lines in reading order. */
   lines: OcrLine[]
+  /** Input image width in pixels. */
   width: number
+  /** Input image height in pixels. */
   height: number
+  /** Total pipeline time in ms. */
   elapsedMs: number
 }
 
+/** Options for `ocr`. */
 export interface OcrOptions {
+  /** Specific model variant to load. */
   model?: string
   /** v1: ['en'] (and any latin script). Chinese-first rec covers ASCII. */
   languages?: string[]
   /** Detection probability threshold, default 0.3. */
   threshold?: number
+  /** Execution backend; 'auto' uses WebGPU when available. */
   backend?: 'auto' | 'wasm' | 'webgpu'
+  /** Model download progress. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
+/** Model variants registered for this task. */
 export function models() {
   return listModels(TASK)
 }
@@ -120,6 +144,7 @@ export function detInput(pixels: Uint8ClampedArray, w: number, h: number): Float
 // ---------------------------------------------------------------------------
 // DB postprocess (pure, unit-tested)
 
+/** Axis-aligned pixel box, origin top-left. */
 export interface Box { x: number; y: number; width: number; height: number }
 
 /** Threshold the probability map into a binary mask. */
@@ -197,6 +222,7 @@ export function sortReadingOrder<T extends { box: Box }>(items: T[]): T[] {
 // ---------------------------------------------------------------------------
 // CTC decode (pure, unit-tested)
 
+/** Decoded text and mean confidence from CTC. */
 export interface CtcResult { text: string; confidence: number }
 
 /**
@@ -301,7 +327,7 @@ async function getSessions(opts: OcrOptions): Promise<OcrSessions> {
   return sessionsPromise
 }
 
-/** One-shot OCR. */
+/** One-shot OCR: detect text regions, then recognize each line. */
 export async function ocr(source: OcrSource, opts: OcrOptions = {}): Promise<OcrResult> {
   const { data, width, height } = await toPixels(source)
   const { det, rec, mapping, dictClasses } = await getSessions(opts)

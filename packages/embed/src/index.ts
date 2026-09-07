@@ -1,6 +1,22 @@
 /**
- * @cunny-ai/embed — local text embeddings (bge-small q8, ~23MB, cached).
- * transformers.js is a private implementation detail (architecture.md Rule 4, builtin policy).
+ * @cunny-ai/embed — text embeddings for English, computed locally.
+ *
+ * Returns normalized 384 dimensional vectors from bge-small-en-v1.5 (BGE family),
+ * q8 quantized to about 24MB, MIT licensed. `embed(texts)` batches array input into
+ * a single inference, and `cosine()` and `topK()` compare the resulting vectors. The
+ * model repository is shared with @cunny-ai/similarity, so using both downloads
+ * the weights once. Runs locally via transformers.js on wasm, with webgpu
+ * available through the acceleration option; the first call downloads the model
+ * with progress events, then it is cached.
+ *
+ * @example
+ * ```ts
+ * import { embed, topK } from '@cunny-ai/embed'
+ *
+ * const [query] = await embed('a cat on a mat', { forQuery: true })
+ * const corpus = await embed(['a dog in a yard', 'a feline on a rug'])
+ * const best = topK(query, corpus, 1)
+ * ```
  */
 import { listModels, resolveModel } from '@cunny-ai/core'
 
@@ -12,10 +28,13 @@ const BGE_QUERY_PREFIX = 'Represent this sentence for searching relevant passage
 export type EmbedInput = string | string[]
 
 export interface EmbedOptions {
+  /** Model id override; defaults to the task default. */
   model?: string
   /** Use the retrieval query prefix (bge). Only for search queries, never for indexed docs. */
   forQuery?: boolean
+  /** Compute backend: 'wasm' (default) or 'webgpu'. */
   acceleration?: 'auto' | 'wasm' | 'webgpu'
+  /** Called with download progress during the first model load. */
   onProgress?: (info: { loaded: number; total: number; file?: string }) => void
 }
 
@@ -86,6 +105,7 @@ export function topK(query: Float32Array, corpus: Float32Array[], k = 5): Array<
     .slice(0, k)
 }
 
+/** Model ids available for this task. */
 export function models() {
   return listModels(TASK)
 }

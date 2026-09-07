@@ -1,5 +1,6 @@
 /** One detected face. Pixel and normalized [0,1] coordinates, origin top-left. */
 export interface Face {
+  /** Confidence in [0,1]. */
   score: number
   /** Pixel box in the input image's coordinate space. */
   box: { x: number; y: number; width: number; height: number }
@@ -10,6 +11,7 @@ export interface Face {
 }
 
 export interface DetectResult {
+  /** Faces found, highest score first. */
   faces: Face[]
   /** Input dimensions the pixel boxes refer to. */
   width: number
@@ -42,9 +44,11 @@ export interface DetectOptions {
 }
 
 export interface FaceDetectorInstance {
+  /** One-shot detection on a still image. */
   detect(source: DetectSource): Promise<DetectResult>
   /** VIDEO-mode realtime path over a live `<video>` element. */
   detectVideo(video: HTMLVideoElement, timestampMs?: number): DetectResult
+  /** Release the underlying detector. */
   close(): void
 }
 
@@ -55,4 +59,5 @@ export interface TrackOptions extends DetectOptions {
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
+/** Per-frame callback for trackFaces(): the faces found and the full result. */
 export type TrackCallback = (faces: Face[], result: DetectResult) => void

@@ -1,3 +1,7 @@
+/**
+ * engine.ts: the loadModel/report surface every task package builds on.
+ * createEngine() for an isolated loader (own modelBase), getDefaultEngine() for the shared one.
+ */
 import { fetchModel } from './loader.js'
 import { resolveModel } from './registry.js'
 import type {

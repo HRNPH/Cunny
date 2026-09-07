@@ -1,8 +1,21 @@
 /**
- * @cunny-ai/upscale — Real-ESRGAN x4 (fp32, ~67MB) via provider-onnx.
- * Tensor names resolved at runtime (session.inputNames/outputNames) so any
- * community export of the same graph works. v0: no tiling — inputs capped
- * honestly by backend instead (016 spec's tiling lands with the memory-budget work).
+ * @cunny-ai/upscale — 4x image upscaling in the browser.
+ *
+ * `upscale(source, { backend })` returns an `ImageBitmap` at 4x the input
+ * size. The model is Real-ESRGAN x4plus (fp32 export, 67MB, BSD-3-Clause) run
+ * through @cunny-ai/provider-onnx on wasm or WebGPU, with the weights
+ * downloaded on first call. `estimate(w, h, backend)` predicts run time and
+ * enforces the 0.5MP wasm input cap. No public q8 export exists, and tiling
+ * is a planned follow up.
+ *
+ * @example
+ * ```ts
+ * import { upscale } from '@cunny-ai/upscale'
+ *
+ * const bitmap = await upscale(file, { backend: 'auto' })
+ * const ctx = canvas.getContext('2d')!
+ * ctx.drawImage(bitmap, 0, 0) // 4x the input dimensions
+ * ```
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createSession, getOrt } from '@cunny-ai/provider-onnx'
@@ -11,14 +24,20 @@ const TASK = 'upscale'
 const SCALE = 4
 const WASM_INPUT_CAP_MP = 0.5 // 0.5MP on wasm; webgpu handles 4MP+
 
+/** Input types `upscale` accepts: blob, bitmap, image or canvas element, or a URL string. */
 export type UpscaleSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCanvasElement | string
 
+/** Options for `upscale`. */
 export interface UpscaleOptions {
+  /** Specific model variant to load. */
   model?: string
+  /** Execution backend; 'auto' uses WebGPU when available. */
   backend?: 'auto' | 'wasm' | 'webgpu'
+  /** Model download progress. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
+/** Model variants registered for this task. */
 export function models() {
   return listModels(TASK)
 }

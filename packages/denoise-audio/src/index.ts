@@ -1,16 +1,26 @@
 /**
  * @cunny-ai/denoise-audio — RNNoise noise suppression, fully offline.
  *
- * The wasm (~112KB, BSD-2) and its emscripten glue ship inside the package
- * as assets: zero network requests after install, works from node_modules.
- * RNNoise is speech-tuned: great for calls, it will flatten music.
+ * RNNoise is classical (no neural net download): the wasm (112KB, BSD-2) and
+ * its emscripten glue ship inside the package as assets, so there is zero
+ * network after install. The frame protocol is 480 samples (10ms at 48kHz);
+ * denoiseBuffer(pcm, sampleRate) is the one-shot path with resampling at the
+ * edges, denoiseStream(stream) runs realtime through an AudioWorklet hosting
+ * the wasm, and createDenoiser() exposes the explicit lifecycle. Speech tuned:
+ * it flattens music, a documented limitation.
  *
- * Frame protocol: 480 samples (10ms @ 48kHz) per process call, the model's
- * native cadence; resampling happens only at the API edges.
+ * @example
+ * ```ts
+ * import { denoiseBuffer, denoiseStream } from '@cunny-ai/denoise-audio'
+ *
+ * const { audio, vad } = await denoiseBuffer(pcm, 48_000)
+ * const cleanStream = await denoiseStream(micStream)
+ * ```
  */
 
 const WASM_URL = new URL('../assets/rnnoise.wasm', import.meta.url).href
 const GLUE_URL = new URL('../assets/rnnoise-glue.js', import.meta.url).href
+/** Samples per process call: 10ms at the model's native 48kHz. */
 export const FRAME_SIZE = 480
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -27,12 +37,14 @@ async function getModule(): Promise<WasmModule> {
   return modulePromise
 }
 
+/** Explicit-lifecycle denoiser: one instance holds one RNNoise state. */
 export interface Denoiser {
   /**
    * Process one 480-sample frame. Returns the cleaned frame plus the
    * model's voice-activity probability for that frame.
    */
   processFrame(frame: Float32Array): { frame: Float32Array; vad: number }
+  /** Release the wasm state and its heap buffers. */
   destroy(): void
 }
 
@@ -71,6 +83,7 @@ export async function createDenoiser(): Promise<Denoiser> {
   }
 }
 
+/** Result of a one-shot denoise. */
 export interface DenoiseResult {
   /** Cleaned PCM at the input sample rate. */
   audio: Float32Array

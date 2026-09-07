@@ -1,6 +1,21 @@
 /**
- * @cunny-ai/bg-remove — background removal via MediaPipe selfie segmentation (~250KB).
- * One-shot cutout + realtime stream mode for video calls.
+ * @cunny-ai/bg-remove — cut the subject out of an image and drop the background.
+ *
+ * `removeBackground(source)` returns the person-only cutout as a transparent
+ * PNG `Blob`; `mask()` returns the raw grayscale mask and `cutoutStream(stream)`
+ * runs the same segmentation on a live video stream for realtime background
+ * replacement. The default model is the MediaPipe selfie segmentation model
+ * (250KB, Apache-2.0), which runs on wasm via @cunny-ai/provider-mediapipe with
+ * GPU acceleration optional. It downloads on the first call with progress
+ * events, then stays cached in the Cache API.
+ *
+ * @example
+ * ```ts
+ * import { removeBackground } from '@cunny-ai/bg-remove'
+ *
+ * const png = await removeBackground(photo, { feather: 2 }) // transparent PNG Blob
+ * const url = URL.createObjectURL(png)                      // ready for an `<img>` src
+ * ```
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createImageSegmenter } from '@cunny-ai/provider-mediapipe'
@@ -8,33 +23,49 @@ import type { ImageSegmenter as MpImageSegmenter } from '@cunny-ai/provider-medi
 
 const TASK = 'bg-remove'
 
+/** Anything decodable into an ImageBitmap: file, blob, bitmap, `<img>`, canvas, or URL. */
 export type BgSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCanvasElement | string
 
+/** Options for one-shot background removal. */
 export interface RemoveOptions {
   /** Edge softness in px. Default 0 (hard cut). */
   feather?: number
+  /** Model id or tier alias. Default = curated default. See models(). */
   model?: string
+  /** Compute delegate; 'auto' prefers GPU and falls back to wasm. */
   acceleration?: 'auto' | 'cpu' | 'gpu'
+  /** Download progress for the first model load. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
 export interface MaskResult {
   /** Full-resolution grayscale alpha mask (255 = person). */
   mask: ImageData
+  /** Mask width in px (matches the input). */
   width: number
+  /** Mask height in px (matches the input). */
   height: number
+  /** Inference time (ms), excluding model download/init. */
   elapsedMs: number
 }
 
+/** Options for realtime background replacement via cutoutStream(). */
 export interface CutoutStreamOptions {
+  /** Replacement background: 'transparent', 'blur', a CSS color, or an image/canvas. */
   background: 'transparent' | 'blur' | string | ImageBitmap | HTMLImageElement | HTMLCanvasElement
+  /** Blur radius in px when background is 'blur'. Default 12. */
   blurAmount?: number
+  /** Target compositor fps. Default 30. */
   fps?: number
+  /** Edge softness in px. Default 1. */
   feather?: number
+  /** Model id or tier alias. Default = curated default. See models(). */
   model?: string
+  /** Download progress for the first model load. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
+/** Available models for this task: id, tier, sizeMB. */
 export function models() {
   return listModels(TASK)
 }

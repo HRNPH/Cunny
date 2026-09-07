@@ -1,6 +1,24 @@
 /**
- * @cunny-ai/pose — MediaPipe Pose Landmarker: 33 normalized + world (meters) landmarks.
- * Named landmark constants kill magic-number code in userland.
+ * @cunny-ai/pose — estimate a 3D body skeleton from a single image.
+ *
+ * `detectPose(source)` returns, per person, 33 landmarks with per-point
+ * visibility in normalized image coordinates, plus a hip-centered world set in
+ * meters for real 3D math; `POSE_CONNECTIONS` pairs landmark indices for
+ * skeleton drawing. The default model is MediaPipe pose lite (5.5MB), which
+ * runs on wasm via @cunny-ai/provider-mediapipe with GPU acceleration optional;
+ * `models()` lists the heavier tiers. It downloads on the first call with
+ * progress events, then stays cached in the Cache API.
+ *
+ * @example
+ * ```ts
+ * import { detectPose, POSE_CONNECTIONS, POSE_LANDMARKS } from '@cunny-ai/pose'
+ *
+ * const { poses, elapsedMs } = await detectPose(image)
+ * const wrist = poses[0].landmarks[POSE_LANDMARKS.RIGHT_WRIST] // { x, y, z, visibility }
+ * for (const [a, b] of POSE_CONNECTIONS) {
+ *   drawBone(poses[0].landmarks[a], poses[0].landmarks[b])
+ * }
+ * ```
  */
 import { getDefaultEngine, listModels } from '@cunny-ai/core'
 import { createPoseLandmarker } from '@cunny-ai/provider-mediapipe'
@@ -24,6 +42,7 @@ export const POSE_CONNECTIONS: Array<[number, number]> = [
   [23, 25], [25, 27], [24, 26], [26, 28], [27, 31], [28, 32], [15, 19], [16, 20],
 ]
 
+/** Anything decodable into an ImageBitmap: file, blob, bitmap, `<img>`, canvas, or URL. */
 export type PoseSource = Blob | File | ImageBitmap | HTMLImageElement | HTMLCanvasElement | string
 
 export interface Landmark { x: number; y: number; z: number; visibility?: number }
@@ -38,15 +57,20 @@ export interface Pose {
 export interface PoseOptions {
   /** 'lite' (5.5MB) | 'full' (9MB) | 'heavy' (29MB) | tier alias. Default 'lite'. */
   model?: string
+  /** Max poses returned. Default 1. */
   numPoses?: number
+  /** Compute delegate; 'auto' prefers GPU and falls back to wasm. */
   acceleration?: 'auto' | 'cpu' | 'gpu'
+  /** Download progress for the first model load. */
   onProgress?: (info: { loaded: number; total: number }) => void
 }
 
 export interface TrackPoseOptions extends PoseOptions {
+  /** Target callback rate. Default 24. */
   fps?: number
 }
 
+/** Available models for this task: id, tier, sizeMB. */
 export function models() {
   return listModels(TASK)
 }

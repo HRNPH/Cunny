@@ -1,7 +1,22 @@
 /**
- * @cunny-ai/provider-onnx — the onnxruntime-web runtime boundary (architecture.md Rule 4).
- * Owns: ort version pin, wasm path resolution, backend selection with fallback,
- * session creation from core-loaded bytes.
+ * @cunny-ai/provider-onnx — the shared onnxruntime-web runtime boundary.
+ *
+ * Pins onnxruntime-web 1.22.0 and exports `createSession`, `run`, and
+ * `newTensor` for the task packages. Wasm files are served from jsdelivr by
+ * default; call `setWasmPaths()` to self host. The runtime is single threaded
+ * by default: the threaded build needs SharedArrayBuffer and its worker
+ * spin-up deadlocks in restricted embedders. The `auto` backend probes the
+ * WebGPU adapter (1.5s) before creating a session, and all session creations
+ * are serialized, since overlapping creates trip ort's initWasm guard.
+ *
+ * @example
+ * ```ts
+ * import { createSession, newTensor, run } from '@cunny-ai/provider-onnx'
+ *
+ * const session = await createSession(modelBytes)
+ * const tensor = await newTensor('float32', data, [1, data.length])
+ * const outputs = await run(session, { [session.inputNames[0]]: tensor })
+ * ```
  */
 import { ProviderMissingError } from '@cunny-ai/core'
 
@@ -17,6 +32,7 @@ export function setWasmPaths(paths: string): void {
 type Ort = typeof import('onnxruntime-web')
 let ortPromise: Promise<Ort> | undefined
 
+/** Resolve the pinned onnxruntime-web module, configured and cached. */
 export async function getOrt(): Promise<Ort> {
   try {
     ortPromise ??= import('onnxruntime-web').then((m) => {
@@ -35,8 +51,13 @@ export async function getOrt(): Promise<Ort> {
   }
 }
 
+/** Execution backend selector: 'auto' probes WebGPU, falling back to wasm. */
 export type Backend = 'auto' | 'wasm' | 'webgpu'
 
+/**
+ * Create an ONNX inference session from model bytes. Every creation is
+ * serialized across all callers.
+ */
 export async function createSession(
   bytes: ArrayBuffer,
   opts: { backend?: Backend } = {},
@@ -97,6 +118,7 @@ export async function run(
   return session.run(feeds)
 }
 
+/** Build a Tensor through the pinned ort module. */
 export async function newTensor(
   type: 'float32' | 'int64' | 'int32',
   data: Float32Array | Int32Array | BigInt64Array,

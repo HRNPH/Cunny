@@ -1,14 +1,30 @@
 /**
- * @cunny-ai/track — SORT + ByteTrack-style two-stage association, pure TypeScript, zero deps.
- * Deterministic, side-effect-free update() — unit-testable without any model (017 spec).
+ * @cunny-ai/track — ByteTrack-style multi object tracking over any detector's boxes.
+ *
+ * Pure TypeScript with zero model bytes: it rides on the boxes any detector
+ * returns, so no model download is involved. createTracker({ minHits, maxAge })
+ * returns a tracker whose update(detections) yields tracks with stable numeric
+ * ids. Each call reports the tracks matched in the current frame and keeps
+ * memory through occlusions for up to maxAge frames.
+ *
+ * @example
+ * ```ts
+ * import { createTracker } from '@cunny-ai/track'
+ *
+ * const tracker = createTracker({ minHits: 3, maxAge: 30 })
+ * const tracks = tracker.update(detections)
+ * tracks.forEach((t) => console.log(t.id, t.state, t.box))
+ * ```
  */
 
+/** One detection from any detector, fed into `update()`. */
 export interface DetBox {
   label?: string
   score: number
   box: { x: number; y: number; width: number; height: number }
 }
 
+/** A tracked object: the same id follows the same object across frames. */
 export interface Track {
   id: number
   label?: string
@@ -56,6 +72,8 @@ export interface Tracker {
 }
 
 /**
+ * Create a tracker; feed it one frame of detections at a time.
+ *
  * ```ts
  * const tracker = createTracker()
  * const tracks = tracker.update(detections.map(d => ({ label: d.label, score: d.score, box: d.box })))
