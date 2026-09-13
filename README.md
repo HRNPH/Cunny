@@ -1,6 +1,9 @@
 # @cunny-ai
 
-Inference-only AI tasks that run in the browser. One npm package per task, no server, no API keys, no data leaving the device.
+A simple js library to solve the issue of Inference-only AI tasks that run in the browser.
+With One npm package per task, on edge with no api key required.
+
+basically to solve my issue of needed to re-solving the running edge ai bullshit every time i whipped up a new client.
 
 ## Requirements
 
