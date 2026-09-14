@@ -3,11 +3,13 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: '@cunny-ai',
   description: 'Browser AI SDK. Inference only, client only.',
+  // github pages serves the site under /Cunny/ on the custom domain
+  base: process.env.DOCS_BASE ?? '/',
   srcDir: '../docs',
   ignoreDeadLinks: true,
   cleanUrls: true,
 
-  head: [['link', { rel: 'icon', href: '/favicon.svg' }]],
+  head: [['link', { rel: 'icon', href: (process.env.DOCS_BASE ?? '/') + 'favicon.svg' }]],
 
   themeConfig: {
     nav: [

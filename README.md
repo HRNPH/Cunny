@@ -169,6 +169,7 @@ docs/         architecture, task catalog, roadmap, release standard
 website/      VitePress site, generated API reference
 ```
 
+- [Docs site](https://www.hrnph.dev/Cunny/) (deployed from main)
 - [Getting started](docs/guide/getting-started.md)
 - [Architecture](docs/architecture.md)
 - [Task catalog](docs/tasks.md)
