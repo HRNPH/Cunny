@@ -25,6 +25,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build # typedoc resolves @cunny-ai/* types from dist
       - run: pnpm docs:build
         env:
           DOCS_BASE: /Cunny/
